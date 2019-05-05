@@ -1,0 +1,19 @@
+.vscode
+*.pyc
+__pycache__/
+
+# vim swap file
+*.swp
+
+# coverage report
+htmlcov/
+.coverage
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+
+
