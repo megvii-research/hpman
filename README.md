@@ -121,6 +121,7 @@ management. This makes starting a new experiment super delightful: let yourself
 free and do whatever you want. 
 
 > Let it go, let it go
+
 ```python
 from torch import nn
 
@@ -269,7 +270,7 @@ optional arguments:
   --hp-load HP_LOAD     Load hyperparameters from a file. The hyperparameters
                         are loaded before any other options are processed
 ```
-(Example take come from [hpcli](TODO:link-to-hp-cli)
+(Example are taken from [hpcli](TODO:link-to-hp-cli))
 
 We are now both **distributed*** (write anywhere) and **centralized** (manage as a whole).
 
