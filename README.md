@@ -115,12 +115,13 @@ but also be error-prone to bugs.
 
 ## Distributed HPM
 So researchers come to another solution: forget about config files; define and
-use hyper-parameters whenever need, anywhere in the project.  This is hardly
-called "Management", it more like anarchism: no management is the best
-management. This makes starting a new experiment super delightful: let yourself
-free and do whatever you want. 
+use hyper-parameters whenever need, anywhere in the project. We call this
+"Distributed HPM".  However, this is hardly called "Management", it more like
+anarchism: no management is the best management. This makes starting a new
+experiment super delightful: let yourself free and do whatever you want. 
 
 > Let it go, let it go
+
 ```python
 from torch import nn
 
@@ -148,6 +149,7 @@ communication, reproduction, and engineering. Nobody knows what happened, and
 nobody knows how to know. You can do nothing, and change nothing.
 
 > You know nothing, John Snow.
+>
 > 咱也不知道，咱也不敢问呀
 
 
@@ -269,7 +271,7 @@ optional arguments:
   --hp-load HP_LOAD     Load hyperparameters from a file. The hyperparameters
                         are loaded before any other options are processed
 ```
-(Example take come from [hpcli](TODO:link-to-hp-cli)
+(Example are taken from [hpcli](TODO:link-to-hp-cli))
 
 We are now both **distributed*** (write anywhere) and **centralized** (manage as a whole).
 
