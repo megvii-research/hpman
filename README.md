@@ -115,10 +115,10 @@ but also be error-prone to bugs.
 
 ## Distributed HPM
 So researchers come to another solution: forget about config files; define and
-use hyper-parameters whenever need, anywhere in the project.  This is hardly
-called "Management", it more like anarchism: no management is the best
-management. This makes starting a new experiment super delightful: let yourself
-free and do whatever you want. 
+use hyper-parameters whenever need, anywhere in the project. We call this
+"Distributed HPM".  However, this is hardly called "Management", it more like
+anarchism: no management is the best management. This makes starting a new
+experiment super delightful: let yourself free and do whatever you want. 
 
 > Let it go, let it go
 
