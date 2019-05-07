@@ -306,7 +306,8 @@ class HyperParameterDBLambdas:
     has_default_value = lambda row: not isinstance(row.value, EmptyValue)
 
     exist_attr = lambda attr: (
-        lambda row: hasattr(row, attr) and (getattr(row, attr) is not None))
+        lambda row: hasattr(row, attr) and (getattr(row, attr) is not None)
+    )
 
     of_name = lambda name: (lambda row: row.name == name)
 
