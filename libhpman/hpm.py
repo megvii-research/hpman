@@ -70,7 +70,7 @@ class HyperParameterManager:
 
         # The "Hyper-Parameter Value Triology"
         self.db = db or HyperParameterDB()
-        
+
     def parse_file(self, path: str) -> "HyperParameterManager":
         """Parse given file to extract hyper-parameter settings.
         :param path: The path to a python source code, directory, or a list of both
@@ -281,7 +281,7 @@ class HyperParameterManager:
             for k, d in self.db.group_by("name").items()
         }
 
-    def set_value(self, name: str, value: object) -> 'HyperParameterManager':
+    def set_value(self, name: str, value: object) -> "HyperParameterManager":
         """Runtime setter. Set value with the highest priority.
         """
         self.db.push_occurrence(
@@ -291,7 +291,7 @@ class HyperParameterManager:
         )
         return self
 
-    def set_values(self, values: dict) -> 'HyperParameterManager':
+    def set_values(self, values: dict) -> "HyperParameterManager":
         """Runtime setter. Set a dict of values with the highest priority.
         """
         for k, v in values.items():
