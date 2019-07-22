@@ -1,4 +1,4 @@
-from libhpman import _
+from libhpman.m import _
 
 
 def func():
