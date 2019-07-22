@@ -9,25 +9,68 @@ It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyper-parameters anywhere, but manage them as a
 whole.
 
-TODO: This example sucks
+# Example
+
+`lib.py`:
 ```python
+# File: lib.py
 from libhpman.m import _
 
-# forward static parsing
-_.parse_file(__file__)
-print(_.get_value('learning_rate'))
 
-# define hyper-parameters
-learning_rate = _('learning_rate', 1e-3)
+def add():
+    return _("a", 0) + _("b", 0)
 
-# override default value
-_.set_value('learning_rate', 1e-2)
-print(_.get_value('learning_rate'))
+
+def mult():
+    return _("a") * _("b")
 ```
-outputs
+
+`main.py`:
+```python
+#!/usr/bin/env python3
+import os
+import argparse
+
+from libhpman.m import _
+
+import lib
+
+
+def main():
+    basedir = os.path.dirname(os.path.realpath(__file__))
+    _.parse_file(basedir)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", default=_.get_value("a"), type=int)
+    parser.add_argument("-b", default=_.get_value("b"), type=int)
+    args = parser.parse_args()
+
+    _.set_value("a", args.a)
+    _.set_value("b", args.b)
+
+    print("a = {}".format(_.get_value("a")))
+    print("b = {}".format(_.get_value("b")))
+    print("lib.add() = {}".format(lib.add()))
+    print("lib.mult() = {}".format(lib.mult()))
+
+
+if __name__ == "__main__":
+    main()
 ```
-0.001
-0.01
+
+Results:
+```bash
+$ ./main.py
+a = 0
+b = 0
+lib.add() = 0
+lib.mult() = 0
+
+$ ./main.py -a 2 -b 3
+a = 2
+b = 3
+lib.add() = 5
+lib.mult() = 6
 ```
 
 This is the core library designed for data manipulation. You may want use
@@ -271,7 +314,7 @@ optional arguments:
   --hp-load HP_LOAD     Load hyperparameters from a file. The hyperparameters
                         are loaded before any other options are processed
 ```
-(Example are taken from [hpcli](TODO:link-to-hp-cli))
+(Example are taken from [hpargparse](TODO:link-to-hp-cli))
 
 We are now both **distributed*** (write anywhere) and **centralized** (manage as a whole).
 
@@ -307,5 +350,13 @@ def training_loop():
 ## Hints
 ## Further More
 
-# Developers
-TODO
+# Development
+1. Install requirements:
+```
+pip install -r requirements.txt
+```
+
+2. Install pre-commit hook
+```
+pre-commit install
+```
