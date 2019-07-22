@@ -9,6 +9,9 @@ test:
 	    --doctest-modules \
 	    libhpman tests
 
+style-check:
+	black --diff --check .
+
 serve-coverage-report:
 	cd htmlcov && python3 -m http.server
 
