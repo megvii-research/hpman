@@ -353,7 +353,7 @@ def training_loop():
 # Development
 1. Install requirements:
 ```
-pip install -r requirements.txt
+pip install -r requirements.dev.txt
 ```
 
 2. Install pre-commit hook
