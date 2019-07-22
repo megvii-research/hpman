@@ -25,6 +25,3 @@ sys.modules[m.__name__] = m
 
 del sys
 del HPMZooModule
-
-
-name = "libhpman"
