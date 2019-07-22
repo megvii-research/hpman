@@ -1,12 +1,13 @@
 all:
 
 test:
-	nose2 --coverage libhpman -s . \
-	    --with-coverage \
-	    --plugin nose2.plugins.doctests \
-	    --with-doctest \
-	    --coverage-report html \
-	    --coverage-report term-missing 
+	pytest \
+	    --cov=libhpman \
+	    --no-cov-on-fail \
+	    --cov-report=html:htmlcov \
+	    --cov-report term \
+	    --doctest-modules \
+	    libhpman tests
 
 serve-coverage-report:
 	cd htmlcov && python3 -m http.server
