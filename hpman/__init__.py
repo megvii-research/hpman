@@ -16,7 +16,7 @@ from .hpm_db import (
     L,
 )
 
-# moneky patch to enable ``from libhpman.m import whatever```
+# moneky patch to enable ``from hpman.m import whatever```
 from .hpm_zoo_monkey_patch import HPMZooModule
 import sys
 

@@ -2,12 +2,12 @@ all:
 
 test:
 	pytest \
-	    --cov=libhpman \
+	    --cov=hpman \
 	    --no-cov-on-fail \
 	    --cov-report=html:htmlcov \
 	    --cov-report term \
 	    --doctest-modules \
-	    libhpman tests
+	    hpman tests
 
 style-check:
 	black --diff --check .

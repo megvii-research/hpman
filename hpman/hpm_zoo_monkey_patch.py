@@ -7,7 +7,7 @@ hpm_zoo = {}
 
 
 class HPMZooModule(ModuleType):
-    """The module-hack that allows us to use ``from libhpman.m import
+    """The module-hack that allows us to use ``from hpman.m import
     some_program``. This hack is prviously used by plumbum."""
 
     __all__ = ()  # to make help() happy
