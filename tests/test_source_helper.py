@@ -1,5 +1,5 @@
 import unittest
-from libhpman import SourceHelper
+from hpman import SourceHelper
 
 
 import os

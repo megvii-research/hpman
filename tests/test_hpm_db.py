@@ -1,6 +1,6 @@
 import unittest
-import libhpman
-from libhpman.hpm_db import HyperParameterDB, HyperParameterOccurrence, P, L
+import hpman
+from hpman.hpm_db import HyperParameterDB, HyperParameterOccurrence, P, L
 import random
 
 

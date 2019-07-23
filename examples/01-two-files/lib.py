@@ -1,4 +1,4 @@
-from libhpman.m import _
+from hpman.m import _
 
 
 def add():

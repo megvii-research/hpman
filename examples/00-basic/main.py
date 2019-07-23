@@ -1,4 +1,4 @@
-from libhpman.m import _
+from hpman.m import _
 
 # forward static parsing
 _.parse_file(__file__)
