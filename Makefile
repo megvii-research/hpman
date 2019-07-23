@@ -15,6 +15,9 @@ style-check:
 serve-coverage-report:
 	cd htmlcov && python3 -m http.server
 
+wheel:
+	python3 setup.py sdist bdist_wheel
+
 doc:
 	# TODO
 	
