@@ -9,6 +9,11 @@ It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyper-parameters anywhere, but manage them as a
 whole.
 
+# Installation
+```bash
+pip install hpman
+```
+
 # Example
 
 `lib.py`:
