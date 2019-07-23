@@ -1,12 +1,12 @@
 import unittest
-import libhpman
-from libhpman import meta
+import hpman
+from hpman import meta
 
 
 class TestMeta(unittest.TestCase):
     def test_dict_attr_binding_class(self):
         # Tests here are complementary to the doctests in
-        # `libhpman.meta.dict_attr_binding_class`
+        # `hpman.meta.dict_attr_binding_class`
         class Dict(metaclass=meta.dict_attr_binding_class):
             name: property = 1
             value: str = 2  # should of no use

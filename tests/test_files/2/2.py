@@ -1,4 +1,4 @@
-from libhpman import HyperParameterManager
+from hpman import HyperParameterManager
 
 _ = HyperParameterManager("_")
 

@@ -1,10 +1,10 @@
 import unittest
-import libhpman
+import hpman
 
 
 class TestCallable(unittest.TestCase):
     def setUp(self):
-        self.hpm = libhpman.HyperParameterManager("_")
+        self.hpm = hpman.HyperParameterManager("_")
 
     def test_assign_without_literal_name(self):
         non_literal_name = "name"
@@ -38,7 +38,7 @@ class TestCallable(unittest.TestCase):
         ]
 
         for value in test_datas:
-            _ = libhpman.HyperParameterManager("_")
+            _ = hpman.HyperParameterManager("_")
 
             a = _("a", value)
             self.assertEqual(a, value)

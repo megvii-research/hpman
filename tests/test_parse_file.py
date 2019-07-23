@@ -1,5 +1,5 @@
 import unittest
-import libhpman
+import hpman
 import os
 
 
@@ -12,7 +12,7 @@ def f(x):
 
 class TestParse(unittest.TestCase):
     def _create_hpm(self):
-        return libhpman.HyperParameterManager("_")
+        return hpman.HyperParameterManager("_")
 
     def test_parse_file_allinone(self):
         try:
