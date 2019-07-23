@@ -49,9 +49,7 @@ class TestParseSource(unittest.TestCase):
 
     def test_parse_hints_not_literal_evaluable(self):
         self.assertRaises(
-            hpman.NotLiteralEvaluable,
-            self.hpm.parse_source,
-            "a = _('a', 1, type=dict)",
+            hpman.NotLiteralEvaluable, self.hpm.parse_source, "a = _('a', 1, type=dict)"
         )
 
     def test_parse_type_with_list(self):
@@ -101,11 +99,7 @@ class TestParseSource(unittest.TestCase):
                 ],
                 "def foo():\n"
                 "    pass\n"
-                "_('hp_def', foo)": [
-                    "hp_def",
-                    hpman.NotLiteralEvaluable(),
-                    ast.Name,
-                ],
+                "_('hp_def', foo)": ["hp_def", hpman.NotLiteralEvaluable(), ast.Name],
                 "_('hp_call', bytes('abc'))": [
                     "hp_call",
                     hpman.NotLiteralEvaluable(),
@@ -204,9 +198,7 @@ class TestParseSource(unittest.TestCase):
                 m = self.hpm.parse_source(expression)
                 # check default value
                 if isinstance(value, hpman.NotLiteralEvaluable):
-                    self.assertEqual(
-                        type(m.get_value(name)), hpman.NotLiteralEvaluable
-                    )
+                    self.assertEqual(type(m.get_value(name)), hpman.NotLiteralEvaluable)
                 else:
                     self.assertEqual(m.get_value(name), value)
 
