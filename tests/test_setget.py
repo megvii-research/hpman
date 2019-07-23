@@ -1,10 +1,10 @@
 import unittest
-import libhpman
+import hpman
 
 
 class TestSetGet(unittest.TestCase):
     def setUp(self):
-        self.hpm = libhpman.HyperParameterManager("_")
+        self.hpm = hpman.HyperParameterManager("_")
 
     def test_set_multiple_hps(self):
         def test_obj():

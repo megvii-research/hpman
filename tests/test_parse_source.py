@@ -1,5 +1,5 @@
 import unittest
-import libhpman
+import hpman
 import ast
 
 
@@ -8,12 +8,12 @@ class TestParseSource(unittest.TestCase):
     #   affect the hyper parameters instance in memory
 
     def setUp(self):
-        self.hpm = libhpman.HyperParameterManager("_")
+        self.hpm = hpman.HyperParameterManager("_")
 
     def test_parse_name_with_non_literal_name(self):
         non_literal_name = "hp_name"
         self.assertRaises(
-            libhpman.NotLiteralNameException,
+            hpman.NotLiteralNameException,
             self.hpm.parse_source,
             "_({}, {})".format(non_literal_name, 1),
         )
@@ -49,7 +49,7 @@ class TestParseSource(unittest.TestCase):
 
     def test_parse_hints_not_literal_evaluable(self):
         self.assertRaises(
-            libhpman.NotLiteralEvaluable,
+            hpman.NotLiteralEvaluable,
             self.hpm.parse_source,
             "a = _('a', 1, type=dict)",
         )
@@ -91,24 +91,24 @@ class TestParseSource(unittest.TestCase):
             {
                 "_('hp_func', print)": [
                     "hp_func",
-                    libhpman.NotLiteralEvaluable(),
+                    hpman.NotLiteralEvaluable(),
                     ast.Name,
                 ],
                 "_('hp_lambda', lambda x: x)": [
                     "hp_lambda",
-                    libhpman.NotLiteralEvaluable(),
+                    hpman.NotLiteralEvaluable(),
                     ast.Lambda,
                 ],
                 "def foo():\n"
                 "    pass\n"
                 "_('hp_def', foo)": [
                     "hp_def",
-                    libhpman.NotLiteralEvaluable(),
+                    hpman.NotLiteralEvaluable(),
                     ast.Name,
                 ],
                 "_('hp_call', bytes('abc'))": [
                     "hp_call",
-                    libhpman.NotLiteralEvaluable(),
+                    hpman.NotLiteralEvaluable(),
                     ast.Call,
                 ],
             }
@@ -120,7 +120,7 @@ class TestParseSource(unittest.TestCase):
                 "class Test:\n"
                 "   pass\n"
                 "obj = Test()\n"
-                "_('hp_obj', obj)": ["hp_obj", libhpman.NotLiteralEvaluable(), ast.Name]
+                "_('hp_obj', obj)": ["hp_obj", hpman.NotLiteralEvaluable(), ast.Name]
             }
         )
 
@@ -148,13 +148,13 @@ class TestParseSource(unittest.TestCase):
 
     def test_parse_double_assignment(self):
         self.assertRaises(
-            libhpman.DoubleAssignmentException,
+            hpman.DoubleAssignmentException,
             self.hpm.parse_source,
             "_('hp1', 1)\n" "_('hp1', 1)",
         )
 
         self.assertRaises(
-            libhpman.DoubleAssignmentException,
+            hpman.DoubleAssignmentException,
             self.hpm.parse_source,
             "_('hp2', 1)\n" "_('hp2', 2)",
         )
@@ -163,10 +163,10 @@ class TestParseSource(unittest.TestCase):
         try:
             m = self.hpm.parse_source("_('hp1')\n" "_('hp2')")
             self.assertIsInstance(
-                m.get_value("hp1", raise_exception=False), libhpman.EmptyValue
+                m.get_value("hp1", raise_exception=False), hpman.EmptyValue
             )
             self.assertIsInstance(
-                m.get_value("hp2", raise_exception=False), libhpman.EmptyValue
+                m.get_value("hp2", raise_exception=False), hpman.EmptyValue
             )
         except Exception as e:
             self.fail("parse failed with exception: {}".format(e))
@@ -203,9 +203,9 @@ class TestParseSource(unittest.TestCase):
 
                 m = self.hpm.parse_source(expression)
                 # check default value
-                if isinstance(value, libhpman.NotLiteralEvaluable):
+                if isinstance(value, hpman.NotLiteralEvaluable):
                     self.assertEqual(
-                        type(m.get_value(name)), libhpman.NotLiteralEvaluable
+                        type(m.get_value(name)), hpman.NotLiteralEvaluable
                     )
                 else:
                     self.assertEqual(m.get_value(name), value)

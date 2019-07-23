@@ -1,10 +1,10 @@
-![libhpman logo](assets/libhpman-logo.png)
+![hpman logo](assets/hpman-logo.png)
 
 ---
 
-# libhpman (超参侠): hyper parameters under control
+# hpman (超参侠): hyper parameters under control
 
-**libhpman** is a hyper-parameter manager(HPM) library that truly make sense.
+**hpman** is a hyper-parameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyper-parameters anywhere, but manage them as a
 whole.
@@ -14,7 +14,7 @@ whole.
 `lib.py`:
 ```python
 # File: lib.py
-from libhpman.m import _
+from hpman.m import _
 
 
 def add():
@@ -31,7 +31,7 @@ def mult():
 import os
 import argparse
 
-from libhpman.m import _
+from hpman.m import _
 
 import lib
 
@@ -82,7 +82,7 @@ a better front-end:
 
 # Installation
 ```
-pip install libhpman
+pip install hpman
 ```
 
 # Story
@@ -209,7 +209,7 @@ choices; we want the best of both worlds.
 After some trial and error, we came up with a design like this:
 ```python
 from torch import nn
-from libhpman.m import _
+from hpman.m import _
 
 
 def build_model():
@@ -242,7 +242,7 @@ Details:
 | hidden_channels | int    |     128 | occurrence[0]:                                                                                              |
 |                 |        |         |   model.py:6                                                                                                |
 |                 |        |         |      1: from torch import nn                                                                                |
-|                 |        |         |      2: from libhpman.m import _                                                                            |
+|                 |        |         |      2: from hpman.m import _                                                                            |
 |                 |        |         |      3:                                                                                                     |
 |                 |        |         |      4:                                                                                                     |
 |                 |        |         |      5: def build_model():                                                                                  |
@@ -328,16 +328,16 @@ We achieve the above things by parsing your source code statically and extract
 where and how you are defining your hyper-parameters. It follows the thoughts
 of [Code as Data](https://en.wikipedia.org/wiki/Code_as_data).
 
-Also, expression evaluation in libhpman is quite safe as we are using
+Also, expression evaluation in hpman is quite safe as we are using
 `ast.literal_eval`.
 
 
 # Features
 ## Define Hyper-Parameters
-The most basic (and the most frequently used) function  of libhpman is to
+The most basic (and the most frequently used) function  of hpman is to
 define a hyper-parameter. 
 ```python
-from libhpman.m import _
+from hpman.m import _
 
 def training_loop():
     # training settings 

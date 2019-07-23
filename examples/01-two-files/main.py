@@ -2,7 +2,7 @@
 import os
 import argparse
 
-from libhpman.m import _
+from hpman.m import _
 
 import lib
 
