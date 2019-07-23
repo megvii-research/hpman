@@ -1,0 +1,15 @@
+style:
+    script:
+        - python3 -V
+        - pip3 install -r requirements.dev.txt --user
+        - export PATH=$PATH:$HOME/.local/bin
+        - make style-check
+
+unittest:
+    script:
+        - pip3 install -r requirements.dev.txt --user
+        - export PATH=$PATH:$HOME/.local/bin
+        - make test
+    artifacts:
+        paths:
+            - htmlcov
