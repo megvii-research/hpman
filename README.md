@@ -1,6 +1,7 @@
 ![libhpman logo](assets/libhpman-logo.png)
 
 ---
+![coverage](/EMTF/libhpman/badges/master/coverage.svg)
 
 # libhpman (超参侠): hyper parameters under control
 
