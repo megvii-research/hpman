@@ -37,17 +37,17 @@ from .hpm_db import (
 
 
 class HyperParameterManager:
-    """HyperParameterManager manages a data structure of hyper-paramters
-    throughout their lifecycle. A lifecycle of hyper-parameter are divided into
+    """HyperParameterManager manages a data structure of hyperparamters
+    throughout their lifecycle. A lifecycle of hyperparameter are divided into
     two phases: parsing-time and runtime. In parsing-time, source code are
-    parsed to (A) set of user-defined hyper-parameters with default values;
+    parsed to (A) set of user-defined hyperparameters with default values;
     while in runtime, user can (B) set/get defaults calling
     HyperParameterManager object, and (C) set values with indention using
     methods. A HyperParameterManager object is usually created as some
     light-weight names, such as underscore "_". This is called a placeholder,
-    and is vital to the parsing of source code. Hyper-parameter values set
+    and is vital to the parsing of source code. Hyperparameter values set
     by (A), (B), (C) three methods are of increasing priority; the latter may
-    overwrite the value of the former one. We call it "Hyper-Parameter Value
+    overwrite the value of the former one. We call it "Hyperparameter Value
     Trilogy"
     """
 
@@ -56,23 +56,23 @@ class HyperParameterManager:
     """
 
     db = None
-    """Hyper-parameter database. ANYTHING you want is here.
+    """Hyperparameter database. ANYTHING you want is here.
     """
 
     def __init__(self, placeholder: str, db: HyperParameterDB = None):
         """Create a hyper parameter manager.
         :param placeholder: placeholder name of this HyperParameterManager
         object. It is important to store this object in a variable in the name
-        of this placeholder prior to defining hyper-parameters by calling the
+        of this placeholder prior to defining hyperparameters by calling the
         object.
         """
         self.placeholder = placeholder
 
-        # The "Hyper-Parameter Value Triology"
+        # The "Hyperparameter Value Triology"
         self.db = db or HyperParameterDB()
 
     def parse_file(self, path: str) -> "HyperParameterManager":
-        """Parse given file to extract hyper-parameter settings.
+        """Parse given file to extract hyperparameter settings.
         :param path: The path to a python source code, directory, or a list of both
         :return: the object itself
         """
@@ -106,7 +106,7 @@ class HyperParameterManager:
     def parse_source(
         self, source: str, filename: str = "<unknown>"
     ) -> "HyperParameterManager":
-        """Parse given string source to extract hyper-parameter settings.
+        """Parse given string source to extract hyperparameter settings.
         :param source: a string of python code with correct line breakings
         :param filename: filename of the python code if have, which is used to
             set attribute of HyperParameter occurrence
@@ -241,7 +241,7 @@ class HyperParameterManager:
 
     # runtime methods
     def exists(self, hp_name: str) -> bool:
-        """Whether a hyper-parameter exists
+        """Whether a hyperparameter exists
         """
         value = self.get_value(hp_name, raise_exception=False)
         if isinstance(value, EmptyValue):
@@ -249,7 +249,7 @@ class HyperParameterManager:
         return True
 
     def get_value(self, name: str, *, raise_exception: bool = True) -> object:
-        """Get the authoritative value of a hyper-parameter.
+        """Get the authoritative value of a hyperparameter.
         Will raise an exception if value does not exist by default. 
 
         :param raise_exception: Defaults to True; set false to suppress
@@ -271,7 +271,7 @@ class HyperParameterManager:
         return None if s.empty() else s[0]
 
     def get_values(self) -> dict:
-        """Get all current available hyper-parameters and their values.
+        """Get all current available hyperparameters and their values.
         :return: dict of name to value.
         """
 
