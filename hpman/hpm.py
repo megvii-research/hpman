@@ -60,7 +60,7 @@ class HyperParameterManager:
     """
 
     def __init__(self, placeholder: str, db: HyperParameterDB = None):
-        """Create a hyper parameter manager.
+        """Create a hyperparameter manager.
         :param placeholder: placeholder name of this HyperParameterManager
         object. It is important to store this object in a variable in the name
         of this placeholder prior to defining hyperparameters by calling the

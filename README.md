@@ -2,7 +2,7 @@
 
 ---
 
-# hpman (超参侠): hyper parameters under control
+# hpman (超参侠): hyperparameters under control
 
 **hpman** is a hyperparameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
@@ -299,7 +299,7 @@ Details:
 |                 |        |         |     21:                                                                                                     |
 +-----------------+--------+---------+-------------------------------------------------------------------------------------------------------------+
 ```
-and change the values of these hyper parameters by
+and change the values of these hyperparameters by
 ```
 $ ./train.py -h
 usage: train.py [-h] [--hidden-channels HIDDEN_CHANNELS]

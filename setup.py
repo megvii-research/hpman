@@ -9,7 +9,7 @@ setuptools.setup(
     version="0.0.1",
     author="EMTF",
     author_email="emtf@megvii.com",
-    description="A hyper parameter manager for deep learning experiments and more",
+    description="A hyperparameter manager for deep learning experiments and more",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/megvii/hpman",
