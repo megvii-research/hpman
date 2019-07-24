@@ -2,11 +2,11 @@
 
 ---
 
-# hpman (超参侠): hyper parameters under control
+# hpman (超参侠): hyperparameters under control
 
-**hpman** is a hyper-parameter manager(HPM) library that truly make sense.
+**hpman** is a hyperparameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
-experiment. You can define hyper-parameters anywhere, but manage them as a
+experiment. You can define hyperparameters anywhere, but manage them as a
 whole.
 
 # Installation
@@ -91,9 +91,9 @@ pip install hpman
 ```
 
 # Story
-Managing ever-changing hyper-parameters is a pain in the a\*\*. During the
+Managing ever-changing hyperparameters is a pain in the a\*\*. During the
 practice of training large amount of neural networks, we found two existing
-hyper-parameter managing  patterns of the utmost prevalence. 
+hyperparameter managing  patterns of the utmost prevalence. 
 
 ## Centralized HPM
 We call the first type "**centralized HPM**". It follows the way of
@@ -137,7 +137,7 @@ def build_model():
 ```
 This way of manaing HPs are widely seen in traditional machine learning
 libraries, e.g., xgboost, whose HPs are fairly stable compare than that in Deep
-Learning. This is good for systematic management of hyper-parameters, acting
+Learning. This is good for systematic management of hyperparameters, acting
 as a protocol for tooling.
 
 ## However ...
@@ -163,7 +163,7 @@ but also be error-prone to bugs.
 
 ## Distributed HPM
 So researchers come to another solution: forget about config files; define and
-use hyper-parameters whenever need, anywhere in the project. We call this
+use hyperparameters whenever need, anywhere in the project. We call this
 "Distributed HPM".  However, this is hardly called "Management", it more like
 anarchism: no management is the best management. This makes starting a new
 experiment super delightful: let yourself free and do whatever you want. 
@@ -174,24 +174,24 @@ experiment super delightful: let yourself free and do whatever you want.
 from torch import nn
 
 def build_model():
-    hidden_channels = 128  # <-- hyper-parameter
+    hidden_channels = 128  # <-- hyperparameter
     return nn.Sequence(
 	[
-	    nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyper-parameter
+	    nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyperparameter
 			nn.BatchNorm1d(hidden_channels),
 			nn.ReLU())
 	] + [
 	    nn.Sequence(nn.Linear(hidden_channels, hidden_channels), 
 			nn.BatchNorm1d(hidden_channels),
 			nn.ReLU())
-	    for i in range(4)  # <-- hyper-parameter
+	    for i in range(4)  # <-- hyperarameter
 	] + [
-	    nn.Linear(hidden_channels, 10)  # <-- hyper-parameter
+	    nn.Linear(hidden_channels, 10)  # <-- hyperparameter
 	]
     )
 ```
 
-However, barbaric growth of hyper-parameters of different names in different
+However, barbaric growth of hyperparameters of different names in different
 places without governance would soon run into a disaster in knowledge sharing,
 communication, reproduction, and engineering. Nobody knows what happened, and
 nobody knows how to know. You can do nothing, and change nothing.
@@ -202,7 +202,7 @@ nobody knows how to know. You can do nothing, and change nothing.
 
 
 ## Distributed-Centralized HPM
-Now we have two ways of managing hyper-parameters: one is good for engineering
+Now we have two ways of managing hyperparameters: one is good for engineering
 but inconvenient for researchers, another one is convenient for researchers,
 but bad for engineering.
 
@@ -218,23 +218,23 @@ from hpman.m import _
 
 
 def build_model():
-    hidden_channels = _("hidden_channels", 128)  # <-- hyper-parameter
+    hidden_channels = _("hidden_channels", 128)  # <-- hyperparameter
     return nn.Sequence(
         [
-            nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyper-parameter
+            nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyperparameter
                         nn.BatchNorm1d(hidden_channels),
                         nn.ReLU())
         ] + [
             nn.Sequence(nn.Linear(hidden_channels, hidden_channels), 
                         nn.BatchNorm1d(hidden_channels),
                         nn.ReLU())
-            for i in range(_("num_layers", 5) - 1)  # <-- hyper-parameter
+            for i in range(_("num_layers", 5) - 1)  # <-- hyperparameter
         ] + [
-            nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyper-parameter
+            nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyperparameter
         ]
     )
 ```
-and you can auto-magically get all your hyper-parameters like this (prior
+and you can auto-magically get all your hyperparameters like this (prior
 actually building the model):
 ```bash
 $ ./train.py --hp-list
@@ -251,10 +251,10 @@ Details:
 |                 |        |         |      3:                                                                                                     |
 |                 |        |         |      4:                                                                                                     |
 |                 |        |         |      5: def build_model():                                                                                  |
-|                 |        |         | ==>  6:     hidden_channels = _("hidden_channels", 128)  # <-- hyper-parameter                              |
+|                 |        |         | ==>  6:     hidden_channels = _("hidden_channels", 128)  # <-- hyperparameter                              |
 |                 |        |         |      7:     return nn.Sequence(                                                                             |
 |                 |        |         |      8:         [                                                                                           |
-|                 |        |         |      9:             nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyper-parameter |
+|                 |        |         |      9:             nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyperparameter |
 |                 |        |         |     10:                         nn.BatchNorm1d(hidden_channels),                                            |
 |                 |        |         |     11:                         nn.ReLU())                                                                  |
 +-----------------+--------+---------+-------------------------------------------------------------------------------------------------------------+
@@ -262,10 +262,10 @@ Details:
 |                 |        |         |   model.py:9                                                                                                |
 |                 |        |         |      4:                                                                                                     |
 |                 |        |         |      5: def build_model():                                                                                  |
-|                 |        |         |      6:     hidden_channels = _("hidden_channels", 128)  # <-- hyper-parameter                              |
+|                 |        |         |      6:     hidden_channels = _("hidden_channels", 128)  # <-- hyperparameter                              |
 |                 |        |         |      7:     return nn.Sequence(                                                                             |
 |                 |        |         |      8:         [                                                                                           |
-|                 |        |         | ==>  9:             nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyper-parameter |
+|                 |        |         | ==>  9:             nn.Sequence(nn.Linear(_("input_channels", 10), hidden_channels),  # <-- hyperparameter |
 |                 |        |         |     10:                         nn.BatchNorm1d(hidden_channels),                                            |
 |                 |        |         |     11:                         nn.ReLU())                                                                  |
 |                 |        |         |     12:         ] + [                                                                                       |
@@ -279,9 +279,9 @@ Details:
 |                 |        |         |     13:             nn.Sequence(nn.Linear(hidden_channels, hidden_channels),                                |
 |                 |        |         |     14:                         nn.BatchNorm1d(hidden_channels),                                            |
 |                 |        |         |     15:                         nn.ReLU())                                                                  |
-|                 |        |         | ==> 16:             for i in range(_("num_layers", 5) - 1)  # <-- hyper-parameter                           |
+|                 |        |         | ==> 16:             for i in range(_("num_layers", 5) - 1)  # <-- hyperparameter                           |
 |                 |        |         |     17:         ] + [                                                                                       |
-|                 |        |         |     18:             nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyper-parameter             |
+|                 |        |         |     18:             nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyperparameter             |
 |                 |        |         |     19:         ]                                                                                           |
 |                 |        |         |     20:     )                                                                                               |
 |                 |        |         |     21:                                                                                                     |
@@ -291,15 +291,15 @@ Details:
 |                 |        |         |     13:             nn.Sequence(nn.Linear(hidden_channels, hidden_channels),                                |
 |                 |        |         |     14:                         nn.BatchNorm1d(hidden_channels),                                            |
 |                 |        |         |     15:                         nn.ReLU())                                                                  |
-|                 |        |         |     16:             for i in range(_("num_layers", 5) - 1)  # <-- hyper-parameter                           |
+|                 |        |         |     16:             for i in range(_("num_layers", 5) - 1)  # <-- hyperparameter                           |
 |                 |        |         |     17:         ] + [                                                                                       |
-|                 |        |         | ==> 18:             nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyper-parameter             |
+|                 |        |         | ==> 18:             nn.Linear(hidden_channels, _("output_channels", 10))  # <-- hyperparameter             |
 |                 |        |         |     19:         ]                                                                                           |
 |                 |        |         |     20:     )                                                                                               |
 |                 |        |         |     21:                                                                                                     |
 +-----------------+--------+---------+-------------------------------------------------------------------------------------------------------------+
 ```
-and change the values of these hyper parameters by
+and change the values of these hyperparameters by
 ```
 $ ./train.py -h
 usage: train.py [-h] [--hidden-channels HIDDEN_CHANNELS]
@@ -326,11 +326,11 @@ We are now both **distributed*** (write anywhere) and **centralized** (manage as
 Our design is inspired by the [underscore
 function](https://www.gnu.org/software/gettext/manual/html_node/Mark-Keywords.html)
 commonly used in [gettext](https://www.gnu.org/software/gettext/) in software
-translation. We deem "hyper-parameters" as slots of some text, and different
-hyper-parameter values corresponds to different "language" of the same text.
+translation. We deem "hyperparameters" as slots of some text, and different
+hyperparameter values corresponds to different "language" of the same text.
 
 We achieve the above things by parsing your source code statically and extract
-where and how you are defining your hyper-parameters. It follows the thoughts
+where and how you are defining your hyperparameters. It follows the thoughts
 of [Code as Data](https://en.wikipedia.org/wiki/Code_as_data).
 
 Also, expression evaluation in hpman is quite safe as we are using
@@ -338,9 +338,9 @@ Also, expression evaluation in hpman is quite safe as we are using
 
 
 # Features
-## Define Hyper-Parameters
+## Define Hyperparameters
 The most basic (and the most frequently used) function  of hpman is to
-define a hyper-parameter. 
+define a hyperparameter. 
 ```python
 from hpman.m import _
 

@@ -5,7 +5,7 @@ import ast
 
 class TestParseSource(unittest.TestCase):
     # Note: clear is not required since that parse won't
-    #   affect the hyper parameters instance in memory
+    #   affect the hyperparameters instance in memory
 
     def setUp(self):
         self.hpm = hpman.HyperParameterManager("_")

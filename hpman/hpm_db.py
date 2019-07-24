@@ -22,39 +22,39 @@ P = HyperParameterPriority
 
 
 class HyperParameterOccurrence(dict, metaclass=dict_attr_binding_class):
-    """A single occurrence of a statically pasred hyper-parameter. Subclasses
+    """A single occurrence of a statically pasred hyperparameter. Subclasses
     dict. See :class:`.meta.dict_attr_binding_class` for detailed usecase.
     """
 
     name: property = None
-    """Name of the hyper-parameter"""
+    """Name of the hyperparameter"""
 
     value: property = EmptyValue()
-    """Value of the hyper-parameter. An instance of :class:`EmptyValue`
+    """Value of the hyperparameter. An instance of :class:`EmptyValue`
     should present if value is not set."""
 
     priority: property = None
-    """Priority of this hyper-parameter occurrence. The value of the highest
-    priority of all the occurrences of the same hyper-parameter will be denoted
-    as "the value of this hyper-parameter". See :class:`HyperParameterPriority`
+    """Priority of this hyperparameter occurrence. The value of the highest
+    priority of all the occurrences of the same hyperparameter will be denoted
+    as "the value of this hyperparameter". See :class:`HyperParameterPriority`
     for details about the meaning of each priority.
     """
 
     filename: property = None
-    """Filename in which this hyper-parameter occurs. Will only present in
-    parsed hyper-parameters"""
+    """Filename in which this hyperparameter occurs. Will only present in
+    parsed hyperparameters"""
 
     lineno: property = None
-    """In which line of the file this hyper-parameter occurs. Will only present
-    in parsed hyper-parameters """
+    """In which line of the file this hyperparameter occurs. Will only present
+    in parsed hyperparameters """
 
     ast_node: property = None
     """The parsed :class:`ast.AST` object of this occurrence. Will only present
-    in parsed hyper-parameters"""
+    in parsed hyperparameters"""
 
     hints: property = None
-    """Hints provided by user of this occurrence of the hyper-parameter.  Will
-    only present in parsed hyper-parameters """
+    """Hints provided by user of this occurrence of the hyperparameter.  Will
+    only present in parsed hyperparameters """
 
     @property
     def has_default_value(self):
@@ -265,7 +265,7 @@ class HyperParameterDB(list):
     def push_occurrence(
         self, occurrence: HyperParameterOccurrence, *, source_helper=None
     ) -> None:
-        """Add an hyper-parameter occurrence. This method can only be used
+        """Add an hyperparameter occurrence. This method can only be used
         in static parsing phase.
         """
         assert isinstance(occurrence, HyperParameterOccurrence), (
