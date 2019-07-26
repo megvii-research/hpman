@@ -153,6 +153,17 @@ class TestParseSource(unittest.TestCase):
             "_('hp2', 1)\n" "_('hp2', 2)",
         )
 
+    def test_parse_double_assignment_in_different_file(self):
+        self.hpm.parse_source("_('hp1', 1)")
+        self.assertRaises(
+            hpman.DoubleAssignmentException, self.hpm.parse_source, "_('hp1', 1)"
+        )
+
+        self.hpm.parse_source("_('hp2', 1)")
+        self.assertRaises(
+            hpman.DoubleAssignmentException, self.hpm.parse_source, "_('hp2', 2)"
+        )
+
     def test_parse_underscore_without_value(self):
         try:
             m = self.hpm.parse_source("_('hp1')\n" "_('hp2')")
