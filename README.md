@@ -344,15 +344,18 @@ same process will return always the same object.
 There are caveats:
 1. Assignment of these imported objects to variables will not work in static
    parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
-```
+
+```python
 # XXX: BAD EXAMPLE
 from hpman.m import _
 hello = _  # this breaks the rule
 hello('a', 1)  # <-- hpman will not ware this 'a' hyperparameter.
 ```
+
 2. Variables share the same name with `hpman.m` imports will be statically
    parsed by hpman, but will not work as expected at runtime. e.g.: 
-```
+
+```python
 def func(*args, **kargs):
     pass
 
