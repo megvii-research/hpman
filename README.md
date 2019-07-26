@@ -344,7 +344,6 @@ same process will return always the same object.
 There are caveats:
 1. Assignment of these imported objects to variables will not work in static
    parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
-
    ```python
 # XXX: BAD EXAMPLE
 from hpman.m import _
