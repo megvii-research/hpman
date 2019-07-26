@@ -2,7 +2,7 @@
 
 ---
 
-# hpman (超参侠): The uncompromising hyperparameters manager.
+# hpman (超参侠): The uncompromising hyperparameter manager.
 
 **hpman** is a hyperparameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
