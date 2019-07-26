@@ -171,6 +171,7 @@ class HyperParameterManager:
                 2. otherwise a :class:`NotLiteralEvaluable` sentinel object is
                     filled
         """
+        source_helper = SourceHelper(source)
 
         root_node = ast.parse(source, filename)
         for node in ast.walk(root_node):
@@ -235,7 +236,7 @@ class HyperParameterManager:
                         "priority": P.PRIORITY_PARSED_FROM_SOURCE_CODE,
                     }
                 )
-                self.db.push_occurrence(occ, source_helper=SourceHelper(source))
+                self.db.push_occurrence(occ, source_helper=source_helper)
 
         return self
 

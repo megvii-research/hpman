@@ -217,6 +217,12 @@ class HyperParameterDB(list):
         cls, occurrence: HyperParameterOccurrence, *, source_helper=None, **kwargs
     ) -> str:
         """Format a single occurrence.
+        :param occurrence: the occurrence to be formated
+        :param source_helper: SourceHelper to be used. If None is given, a
+            new SourceHelper will be constructed using information provided in
+            occurrence (which involves reading the whole file). If a SourceHelper
+            object is given, we will use the given SourceHelper (which will not
+            read the file again)
         """
         assert occurrence is not None
         if source_helper is None:
@@ -224,7 +230,7 @@ class HyperParameterDB(list):
                 occurrence["filename"], occurrence["lineno"]
             )
         else:
-            source_helper.format_given_filename_ane_lineno(
+            return source_helper.format_given_filename_ane_lineno(
                 occurrence["filename"], occurrence["lineno"]
             )
 
@@ -261,9 +267,11 @@ class HyperParameterDB(list):
             )
             raise DoubleAssignmentException(error_msg)
 
-    # TODO: XXX: passing source_helper around is ugly
     def push_occurrence(
-        self, occurrence: HyperParameterOccurrence, *, source_helper=None
+        self,
+        occurrence: HyperParameterOccurrence,
+        *,
+        source_helper: Optional[SourceHelper] = None
     ) -> None:
         """Add an hyperparameter occurrence. This method can only be used
         in static parsing phase.
