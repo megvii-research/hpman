@@ -412,7 +412,7 @@ the hyperparameters in your source codes. It is employed by `_.parse_file` and
 - `_.parse_source` accepts only a piece of source code string.
 
 Examples:
-```
+```python
 _.parse_file(__file__)
 _.parse_file('main.py')
 _.parse_file('library_dir')
@@ -430,27 +430,77 @@ Value of a hyperparameter can be get by two ways in runtime:
 1. use `__call__` synatx: `_('varname')`
 2. use `_.get_value('varname')`
 
-All hyperparameters can be get by `_.get_values()`
+A dict of all hyperparameters can be get by `_.get_values()`
 
-Write of a hyperparameter can only be done with
-```
+Setting a hyperparameter can only be done with
+```python
 _.set_value('varname', value)
 ```
 
 ## Hints
-Hints provides an interface to pass information from use to downstream
-frameworks. Downstream frameworks could utilies these provided information
-to better serve its own purpose.
+**Hints** is intended to provide a mechanism for extending hpman.
 
-For example, if we write something like:
-```
+It provides an interface to store and retrieve aribitrary information provided
+at hyperparameter definition.
+Downstream libraries and frameworks could utilies these provided information to
+better serve its own purpose.
+
+For example, say we would like to create an argparse interface for setting
+hyperparameters from the command line, user could write something like
+
+```python
 _('optimizer', 'adam', choices=['adam', 'sgd'])
 ```
-TODO
-_('learning_rate', 1e-3, low=1-e5, high=1, logscale=True)
+
+in the their codebase, and in the entry point of the program, we could
+retrieve these information and provide better argparse options:
+
+```python
+# File: hints_example.py
+from hpman.m import _
+from hpman.hpm_db import L
+
+import argparse
+
+_('optimizer', 'adam', choices=['adam', 'sgd'])
 
 
-## Further More
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    _.parse_file(__file__)
+    occurrences = _.db.select(lambda row: row.name == 'optimizer')
+    oc = [
+        oc
+        for oc in occurrences
+        if oc['hints'] is not None
+    ][0]
+    choices = oc['hints']['choices']
+    value = oc['value']
+
+    parser.add_argument('--optimizer', default=value, choices=choices)
+    args = parser.parse_args() 
+
+    print('optimizer: {}'.format(args.optimizer))
+```
+
+usecase is as follows:
+```
+$ python3 hints_example.py   
+optimizer: adam
+$ python3 hints_example.py -h
+usage: hints_example.py [-h] [--optimizer {adam,sgd}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --optimizer {adam,sgd}
+$ python3 hints_example.py --optimizer sgd
+optimizer: sgd
+$ python3 hints_example.py --optimizer rmsprop
+usage: hints_example.py [-h] [--optimizer {adam,sgd}]
+hints_example.py: error: argument --optimizer: invalid choice: 'rmsprop' (choose from 'adam', 'sgd')
+```
+
+The example can be found at [examples/02-hints](examples/02-hints)
 
 # Development
 1. Install requirements:
