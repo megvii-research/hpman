@@ -2,14 +2,36 @@ style:
     script:
         - python3 -V
         - pip3 install -r requirements.dev.txt --user
-        - export PATH=$PATH:$HOME/.local/bin
         - make style-check
 
 unittest:
     script:
         - pip3 install -r requirements.dev.txt --user
-        - export PATH=$PATH:$HOME/.local/bin
         - make test
     artifacts:
         paths:
             - htmlcov
+
+doc:
+    script:
+        - pip3 install -r requirements.dev.txt --user
+        - make doc
+    artifacts:
+        paths:
+            - docs/_build/html
+    only:
+        - master
+
+pages:
+    stage: deploy
+    dependencies:
+        - unittest
+        - doc
+    script:
+        - mv docs/_build/html public
+        - mv htmlcov public/cov
+    artifacts:
+        paths:
+            - public
+    only:
+        - master
