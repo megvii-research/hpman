@@ -2,3 +2,6 @@ black
 pytest
 pytest-cov
 pre-commit
+sphinx
+sphinx-rtd-theme
+m2r

@@ -13,3 +13,25 @@ unittest:
     artifacts:
         paths:
             - htmlcov
+
+doc:
+    script:
+        - cd docs
+        - pip3 install -r requirements.dev.txt --user
+        - make doc
+    artifacts:
+        paths:
+            - docs/_build/html
+
+pages:
+    stage: deploy
+    dependencies:
+        - unittest
+        - doc
+    script:
+        - mv docs/_build/html public
+        - mv htmlcov pubic/cov
+    artifacts:
+        paths:
+            - public
+
