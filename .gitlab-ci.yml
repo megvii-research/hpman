@@ -19,6 +19,8 @@ doc:
     artifacts:
         paths:
             - docs/_build/html
+    only:
+        - master
 
 pages:
     stage: deploy
@@ -31,4 +33,5 @@ pages:
     artifacts:
         paths:
             - public
-
+    only:
+        - master
