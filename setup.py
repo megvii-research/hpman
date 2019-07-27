@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="hpman",
-    version="0.0.1",
+    version="0.0.2",
     author="EMTF",
     author_email="emtf@megvii.com",
     description="A hyperparameter manager for deep learning experiments and more",
