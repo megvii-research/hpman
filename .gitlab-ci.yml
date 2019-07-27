@@ -16,7 +16,6 @@ unittest:
 
 doc:
     script:
-        - cd docs
         - pip3 install -r requirements.dev.txt --user
         - make doc
     artifacts:
