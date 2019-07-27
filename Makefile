@@ -19,8 +19,8 @@ wheel:
 	python3 setup.py sdist bdist_wheel
 
 doc:
-	# TODO
-	
+	cd docs && ./gendoc.sh
+
 install:  
 	# install prerequisites
 	# TODO: 

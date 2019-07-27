@@ -30,7 +30,7 @@ class HyperParameterOccurrence(dict, metaclass=dict_attr_binding_class):
     """Name of the hyperparameter"""
 
     value: property = EmptyValue()
-    """Value of the hyperparameter. An instance of :class:`EmptyValue`
+    """Value of the hyperparameter. An instance of :class:`.primitives.EmptyValue`
     should present if value is not set."""
 
     priority: property = None
@@ -49,7 +49,7 @@ class HyperParameterOccurrence(dict, metaclass=dict_attr_binding_class):
     in parsed hyperparameters """
 
     ast_node: property = None
-    """The parsed :class:`ast.AST` object of this occurrence. Will only present
+    """The parsed `ast.AST` object of this occurrence. Will only present
     in parsed hyperparameters"""
 
     hints: property = None
@@ -67,7 +67,7 @@ class HyperParameterDB(list):
     provides SQL/pandas-like syntax to access the data.
 
     :note: This *DB* is quite functional and does not provide the concept of
-        *view*. Most operations provided returns a new instance. We provide
+        *view*. Most operations provided return a new instance. We provide
         back-reference ability by assign an auto increment index to every
         entry.
     """
@@ -85,6 +85,7 @@ class HyperParameterDB(list):
 
     def group_by(self, column: str) -> Dict[str, "HyperParameterDB"]:
         """Group data by given attribute/column.
+
         :param column: The attribute to be grouped by.
         """
         groups = collections.defaultdict(HyperParameterDB)
@@ -94,6 +95,7 @@ class HyperParameterDB(list):
 
     def indexing(self, idx: Union[int, List[int]]):
         """Indexing using a integer or a list of integers.
+
         :param idx: index of HyperParameterOccurrence to be fetched
         """
         if isinstance(idx, int):
@@ -106,6 +108,7 @@ class HyperParameterDB(list):
         self, where: Callable[[HyperParameterOccurrence], bool]
     ) -> "HyperParameterDB":
         """Select rows from database.
+
         :param where: a function takes a row and returns whether this row
             should be retained.
         """
@@ -119,6 +122,7 @@ class HyperParameterDB(list):
 
     def extract_column(self, column: str) -> List[object]:
         """Extract one column of values.
+
         :param column: column name to be extracted
 
         :return: list of values.
@@ -127,6 +131,7 @@ class HyperParameterDB(list):
 
     def choose_columns(self, *columns: List[str]) -> "HyperParameterDB":
         """Extract columns to form a new database.
+
         :param columns: list of column names to be extracted.
         """
         return HyperParameterDB([{c: i[c] for c in columns} for i in self])
@@ -135,6 +140,7 @@ class HyperParameterDB(list):
         self, func: Callable[[HyperParameterOccurrence], HyperParameterOccurrence]
     ) -> "HyperParameterDB":
         """Apply func on each row, which modifies old db.
+
         :param func: a function that takes a row, modifies it inplace.
         :return: self
         """
@@ -184,6 +190,7 @@ class HyperParameterDB(list):
     def any(self, func: Callable[[HyperParameterOccurrence], bool]) -> bool:
         """If **one** of the results after applying the given function to each row
         is True, then returns true. The evaluation is short-circuited.
+
         :param func: The funcion maps a row to a boolean value, which will be
             applied to each row of the database.
         """
@@ -192,6 +199,7 @@ class HyperParameterDB(list):
     def all(self, func: Callable[[HyperParameterOccurrence], bool]) -> bool:
         """If **all** of the results after applying the given function to each row
         is True, then returns true. The evaluation is short-circuited.
+
         :param func: The funcion maps a row to a boolean value, which will be
             applied to each row of the database.
         """
@@ -201,6 +209,7 @@ class HyperParameterDB(list):
         self, where: Callable[[HyperParameterOccurrence], bool]
     ) -> Optional[HyperParameterOccurrence]:
         """Find the first row which matches given condition.
+
         :param where: The function takes a row and returns a boolean value,
             indicating whether a row should be retained.
         :return: A row is returned if at least one match is found; otherwise
@@ -217,6 +226,7 @@ class HyperParameterDB(list):
         cls, occurrence: HyperParameterOccurrence, *, source_helper=None, **kwargs
     ) -> str:
         """Format a single occurrence.
+
         :param occurrence: the occurrence to be formated
         :param source_helper: SourceHelper to be used. If None is given, a
             new SourceHelper will be constructed using information provided in

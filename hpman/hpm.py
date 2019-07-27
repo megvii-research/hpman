@@ -61,10 +61,11 @@ class HyperParameterManager:
 
     def __init__(self, placeholder: str, db: HyperParameterDB = None):
         """Create a hyperparameter manager.
+
         :param placeholder: placeholder name of this HyperParameterManager
-        object. It is important to store this object in a variable in the name
-        of this placeholder prior to defining hyperparameters by calling the
-        object.
+            object. It is important to store this object in a variable in the name
+            of this placeholder prior to defining hyperparameters by calling the
+            object.
         """
         self.placeholder = placeholder
 
@@ -73,6 +74,7 @@ class HyperParameterManager:
 
     def parse_file(self, path: str) -> "HyperParameterManager":
         """Parse given file to extract hyperparameter settings.
+
         :param path: The path to a python source code, directory, or a list of both
         :return: the object itself
         """
@@ -107,12 +109,15 @@ class HyperParameterManager:
         self, source: str, filename: str = "<unknown>"
     ) -> "HyperParameterManager":
         """Parse given string source to extract hyperparameter settings.
+
         :param source: a string of python code with correct line breakings
         :param filename: filename of the python code if have, which is used to
             set attribute of HyperParameter occurrence
 
         :note: The parsed results can be seen as a dict of the following structure:
-            .. code::
+
+            .. code:: python
+
                   {
                     "hp0": [
                         {
@@ -166,9 +171,9 @@ class HyperParameterManager:
             Rules for the value of "value" depends on the type of parsed ast
             node.  The correspondance between node types and its actions are
             depicted as follows:
-                1. if :meth:`ast.literal_eval` returns without exception, the
+                1. if `ast.literal_eval` returns without exception, the
                     the evaluated results are filled in the dict.
-                2. otherwise a :class:`NotLiteralEvaluable` sentinel object is
+                2. otherwise a :class:`.primitives.NotLiteralEvaluable` sentinel object is
                     filled
         """
         source_helper = SourceHelper(source)
@@ -243,6 +248,8 @@ class HyperParameterManager:
     # runtime methods
     def exists(self, hp_name: str) -> bool:
         """Whether a hyperparameter exists
+
+        :param hp_name: The name of the hyperparameter
         """
         value = self.get_value(hp_name, raise_exception=False)
         if isinstance(value, EmptyValue):
@@ -253,9 +260,10 @@ class HyperParameterManager:
         """Get the authoritative value of a hyperparameter.
         Will raise an exception if value does not exist by default. 
 
+        :param hp_name: The name of the hyperparameter
         :param raise_exception: Defaults to True; set false to suppress
             exception. In this case, the missing value will be an instance
-            of :class:`EmptyValue`
+            of :class:`.primitives.EmptyValue`
         """
         v = self.db.select(lambda row: row.name == name).sort(L.value_priority)
         if len(v) == 0:
@@ -268,11 +276,18 @@ class HyperParameterManager:
         return value
 
     def get_occurrence_of_value(self, name: str) -> Optional[HyperParameterOccurrence]:
+        """
+        :param hp_name: The name of the hyperparameter
+
+        :return: a :class:`.hpm_db.HyperParameterOccurrence` object or None
+        """
+
         s = self.db.select(L.of_name(name)).sort(L.value_priority)
         return None if s.empty() else s[0]
 
     def get_values(self) -> dict:
         """Get all current available hyperparameters and their values.
+
         :return: dict of name to value.
         """
 

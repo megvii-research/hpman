@@ -4,6 +4,7 @@ class SourceHelper:
 
     def __init__(self, source: str):
         """Create a SourceHelper given source code.
+
         :param source: source code to be parsed
         """
         self.source = source
@@ -12,6 +13,7 @@ class SourceHelper:
     @classmethod
     def from_file(cls, path: str) -> "SourceHelper":
         """Create a SourceHelper given file path.
+
         :param path: file path of the source code
         """
         with open(path) as f:
@@ -21,7 +23,9 @@ class SourceHelper:
         self, from_line: int, to_line: int, lineno: int, *, indent_spaces: int = 0
     ) -> str:
         """Format a range of lines of code.
-        :param from_line, to_line: range of lines to be formatted. one-based, closed-interval.
+
+        :param from_line: range start of lines to be formatted. one-based, closed-interval.
+        :param to_line: range end of lines to be formatted. one-based, closed-interval.
         :param lineno: current line number, one-based, closed-interval.
         :param indent_spaces: number of spaces to be prepended at each line.
 
@@ -67,6 +71,7 @@ class SourceHelper:
         self, lineno: int, before: int = 5, after: int = 5, **kwargs
     ) -> str:
         """One-Line-Of-Code-Centric formatting.
+
         :param lineno: line to be displayed
         :param before: number of lines before *lineno* 
         :param after: number of lines after *lineno* 
@@ -90,6 +95,7 @@ class SourceHelper:
     @classmethod
     def format_given_source_and_lineno(cls, source: str, lineno: int, **kwargs) -> str:
         """Akin to :meth:`.format_line_with_context`, but source is given.
+
         :param source: source code string
         :param lineno: line to be displayed
 
@@ -109,6 +115,7 @@ class SourceHelper:
     ) -> str:
         """Akin to :meth:`.format_given_source_and_lineno`, but filename is
             given, and will be formatted as well.
+
         :param filename: file name to be displayed. It has nothing to do with
             the content of the source code and is purely for display purpose.
         :param source: soure code to be parsed

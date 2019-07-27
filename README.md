@@ -342,8 +342,7 @@ same process will return always the same object.
 
 
 There are caveats:
-- Assignment of these imported objects to variables will not work in static
-   parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
+- Assignment of these imported objects to variables will not work in static parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
 
 ```python
 # XXX: BAD EXAMPLE
@@ -351,8 +350,7 @@ from hpman.m import _
 hello = _  # this breaks the rule
 hello('a', 1)  # <-- hpman will not ware this 'a' hyperparameter.
 ```
-- Variables share the same name with `hpman.m` imports will be statically
-   parsed by hpman, but will not work as expected at runtime. e.g.: 
+- Variables share the same name with `hpman.m` imports will be statically parsed by hpman, but will not work as expected at runtime. e.g.: 
 
 ```python
 def func(*args, **kargs):
@@ -429,8 +427,8 @@ hyperparameter manager.
 
 ## Runtime Value Getter/Setter
 Value of a hyperparameter can be get by two ways in runtime:
-1. use `__call__` synatx: `_('varname')`
-2. use `_.get_value('varname')`
+1. use `__call__` syntax: `_('varname')`
+2. use dedicated function: `_.get_value('varname')`
 
 A dict of all hyperparameters can be get by `_.get_values()`
 
@@ -486,7 +484,7 @@ if __name__ == '__main__':
 ```
 
 usecase is as follows:
-```
+```bash
 $ python3 hints_example.py   
 optimizer: adam
 $ python3 hints_example.py -h
@@ -506,11 +504,11 @@ The example can be found at [examples/02-hints](examples/02-hints)
 
 # Development
 1. Install requirements:
-```
+```bash
 pip install -r requirements.dev.txt
 ```
 
 2. Install pre-commit hook
-```
+```bash
 pre-commit install
 ```
