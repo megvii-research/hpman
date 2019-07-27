@@ -27,6 +27,7 @@ pages:
         - unittest
         - doc
     script:
+        - ls
         - mv docs/_build/html public
         - mv htmlcov pubic/cov
     artifacts:
