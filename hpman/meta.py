@@ -6,7 +6,8 @@ class dict_attr_binding_class(type):
     class attributes and dict items. A concrete example is as follows (and will
     be doctest-ed):
 
-        .. code::
+        .. code:: python
+
             >>> class MyDictBindingClass(metaclass=dict_attr_binding_class):
             ...    # bi-directionally binds `obj['name']` and obj.name
             ...    name: property = 1

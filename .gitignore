@@ -16,4 +16,6 @@ eggs/
 .eggs/
 *.egg-info/
 
-
+# sphinx
+/docs/api
+/docs/_build
