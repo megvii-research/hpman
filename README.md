@@ -376,10 +376,10 @@ from hpman.m import _
 
 def training_loop():
     # training settings 
-    batch_size = _('batch_size', 128)  # <-- 
+    batch_size = _('batch_size', 128)
 
     # first use of `num_layer` is recommend to come with default value
-    print('num_layers = {}'.format*(_('num__layers', 50)))  
+    print('num_layers = {}'.format(_('num__layers', 50)))
 
     # use it directly without storing the values
     if _('use_resnet', True):  
