@@ -426,7 +426,7 @@ _.parse_source('_("a", 1)')
 ```
 
 Parsing is done using `ast` module provided in the python standard library.
-We match all function calls with require syntax to detect proper calls to
+We match all function calls with required syntax to detect proper calls to
 hyperparameter manager.
 
 ## Runtime Value Getter/Setter
