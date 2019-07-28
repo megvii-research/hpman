@@ -9,6 +9,10 @@ It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyperparameters anywhere, but manage them as a
 whole.
 
+hpman comes with **zero dependencies** except for python standard library. It is
+intended to be used as a basic building blocks for downstream tools, such as
+command line interface, IDE integration, experiment management system, etc.
+
 # Installation
 ```bash
 pip install hpman
