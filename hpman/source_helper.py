@@ -88,7 +88,7 @@ class SourceHelper:
     def format_given_filename_ane_lineno(
         self, filename: str, lineno: int, **kwargs
     ) -> str:
-        self.format_given_filename_and_source_and_lineno(
+        return self.format_given_filename_and_source_and_lineno(
             filename, self.source, lineno, **kwargs
         )
 
