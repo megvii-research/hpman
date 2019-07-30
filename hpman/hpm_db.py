@@ -4,11 +4,13 @@ import collections
 import glob
 import os
 import functools
+import re
 import enum
 from typing import Union, Dict, List, Callable, Optional
 
+from attrdict import AttrDict
+
 from .source_helper import SourceHelper
-from .meta import dict_attr_binding_class
 from .primitives import EmptyValue, DoubleAssignmentException
 
 
@@ -21,40 +23,75 @@ class HyperParameterPriority(enum.IntEnum):
 P = HyperParameterPriority
 
 
-class HyperParameterOccurrence(dict, metaclass=dict_attr_binding_class):
+class HyperParameterOccurrence(AttrDict):
     """A single occurrence of a statically pasred hyperparameter. Subclasses
-    dict. See :class:`.meta.dict_attr_binding_class` for detailed usecase.
+    dict. 
     """
 
-    name: property = None
+    name = None
     """Name of the hyperparameter"""
 
-    value: property = EmptyValue()
+    value = EmptyValue()
     """Value of the hyperparameter. An instance of :class:`.primitives.EmptyValue`
     should present if value is not set."""
 
-    priority: property = None
+    priority = None
     """Priority of this hyperparameter occurrence. The value of the highest
     priority of all the occurrences of the same hyperparameter will be denoted
     as "the value of this hyperparameter". See :class:`HyperParameterPriority`
     for details about the meaning of each priority.
     """
 
-    filename: property = None
+    filename = None
     """Filename in which this hyperparameter occurs. Will only present in
     parsed hyperparameters"""
 
-    lineno: property = None
+    lineno = None
     """In which line of the file this hyperparameter occurs. Will only present
     in parsed hyperparameters """
 
-    ast_node: property = None
+    ast_node = None
     """The parsed `ast.AST` object of this occurrence. Will only present
     in parsed hyperparameters"""
 
-    hints: property = None
+    hints = None
     """Hints provided by user of this occurrence of the hyperparameter.  Will
     only present in parsed hyperparameters """
+
+    # XXX: In python 3.6, we would use `attr_dict_bind` library to implement
+    #     attribute dict binding mechanism with user defined attributs
+    #     straighforward.
+    #     However, to accommodate python 3.5, we implement the same function
+    #     using `attrdict` along with the following ugly hacks.
+    __defaults = {
+        "name": None,
+        # This empty value instance is vital; we rely on this exact sentinel
+        # object group all empty values.
+        "value": EmptyValue(),
+        "priority": None,
+        "filename": None,
+        "lineno": None,
+        "ast_node": None,
+        "hints": None,
+    }
+
+    def __init__(self, *args, **kwargs):
+        # Make a **shallow** copy of default values (as we need the EmptyValue
+        # sentinel to be the same across instances of HyperParameterOccurrence)
+        d = self.__defaults.copy()
+
+        # get user passed dict initialization
+        v = dict(*args, **kwargs)
+
+        # ... and overrides defaults
+        d.update(v)
+
+        for name in self.__defaults:
+            if hasattr(self, name):
+                # XXX: remove user defined attributes as AttrDict does not works
+                # with them
+                delattr(type(self), name)
+        super().__init__(*args, **d)
 
     @property
     def has_default_value(self):

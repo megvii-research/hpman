@@ -1,12 +1,12 @@
 style:
     script:
         - python3 -V
-        - pip3 install -r requirements.dev.txt --user
+        - pip3 install -r requirements.txt -r requirements.dev.txt --user
         - make style-check
 
 unittest:
     script:
-        - pip3 install -r requirements.dev.txt --user
+        - pip3 install -r requirements.txt -r requirements.dev.txt --user
         - make test
     artifacts:
         paths:
@@ -14,7 +14,7 @@ unittest:
 
 doc:
     script:
-        - pip3 install -r requirements.dev.txt --user
+        - pip3 install -r requirements.txt -r requirements.dev.txt --user
         - make doc
     artifacts:
         paths:
