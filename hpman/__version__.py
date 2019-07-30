@@ -1,0 +1,6 @@
+__title__ = "hpman"
+__version__ = "0.0.4"
+__author__ = "EMTF"
+__author_email__ = "emtf@megvii.com"
+__url__ = "https://github.com/megvii/hpman"
+__description__ = "A hyperparameter manager for deep learning experiments."
