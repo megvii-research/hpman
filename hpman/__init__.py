@@ -25,3 +25,5 @@ sys.modules[m.__name__] = m
 
 del sys
 del HPMZooModule
+
+from .__version__ import __title__, __version__, __author__, __author_email__, __url__
