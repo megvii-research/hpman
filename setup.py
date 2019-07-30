@@ -10,7 +10,7 @@ with open("requirements.txt") as f:
 
 setuptools.setup(
     name="hpman",
-    version="0.0.3",
+    version="0.0.4",
     author="EMTF",
     author_email="emtf@megvii.com",
     description="A hyperparameter manager for deep learning experiments and more",
