@@ -7,7 +7,6 @@ import copy
 from typing import Union, Dict, List, Callable, Optional
 
 from .source_helper import SourceHelper
-from .meta import dict_attr_binding_class
 
 from .primitives import (
     EmptyValue,
