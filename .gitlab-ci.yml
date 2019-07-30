@@ -1,3 +1,8 @@
+stages:
+    - test
+    - deploy
+    - release
+
 style:
     script:
         - python3 -V
@@ -35,3 +40,16 @@ pages:
             - public
     only:
         - master
+
+release:
+    stage: release
+    only:
+        - tags
+    dependencies: 
+        - unittest
+        - doc
+    script:
+        - make wheel
+        - devpi use "${DEVPI_URL}" 
+        - devpi login "${DEVPI_LOGIN}" --password="${DEVPI_PASSWORD}"
+        - devpi upload dist/*.whl
