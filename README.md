@@ -12,6 +12,9 @@ whole.
 hpman is intended to be used as a basic building blocks for downstream tools, such as
 command line interface, IDE integration, experiment management system, etc.
 
+hpman supports Python version greater equal than 3.5.
+
+
 # Installation
 ```bash
 pip install hpman
