@@ -1,8 +1,3 @@
-stages:
-    - test
-    - deploy
-    - release
-
 style:
     script:
         - python3 -V
@@ -42,9 +37,7 @@ pages:
         - master
 
 release:
-    stage: release
-    only:
-        - tags
+    stage: deploy
     dependencies: 
         - unittest
         - doc
@@ -53,3 +46,5 @@ release:
         - devpi use "${DEVPI_URL}" 
         - devpi login "${DEVPI_LOGIN}" --password="${DEVPI_PASSWORD}"
         - devpi upload dist/*.whl
+    only:
+        - tags
