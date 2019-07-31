@@ -17,12 +17,22 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "hpman"
-copyright = "2019, EMTF"
-author = "EMTF"
+import os
+
+here = os.path.dirname(os.path.realpath(__file__))
+
+
+about = {}
+with open(os.path.join(here, "..", "hpman", "__version__.py")) as f:
+    exec(f.read(), about)
+
+
+project = about["__title__"]
+copyright = "2019, {}".format(about["__author__"])
+author = about["__author__"]
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = about["__version__"]
 
 
 # -- General configuration ---------------------------------------------------
