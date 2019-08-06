@@ -1,6 +1,9 @@
 # XXX: since we need python3.5 compatibility, we drop the requirements of black
 # black
 
+seed-isort-config
+isort
+
 pytest
 pytest-cov
 pre-commit

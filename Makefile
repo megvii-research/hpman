@@ -9,6 +9,10 @@ test:
 	    --doctest-modules \
 	    hpman tests
 
+format:
+	isort -rc hpman tests
+	black hpman tests
+
 style-check:
 	black --diff --check .
 

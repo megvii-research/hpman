@@ -1,7 +1,8 @@
-import unittest
-import hpman
-from hpman.hpm_db import HyperParameterDB, HyperParameterOccurrence, P, L
 import random
+import unittest
+
+import hpman
+from hpman.hpm_db import HyperParameterDB, HyperParameterOccurrence, L, P
 
 
 class TestHPMDB(unittest.TestCase):

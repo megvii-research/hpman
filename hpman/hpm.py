@@ -1,28 +1,26 @@
 import ast
-import sys
 import collections
+import copy
 import glob
 import os
-import copy
-from typing import Union, Dict, List, Callable, Optional
+import sys
+from typing import Callable, Dict, List, Optional, Union
 
-from .source_helper import SourceHelper
-
+from .hpm_db import (
+    HyperParameterDB,
+    HyperParameterDBLambdas,
+    HyperParameterOccurrence,
+    HyperParameterPriority,
+    L,
+    P,
+)
 from .primitives import (
+    DoubleAssignmentException,
     EmptyValue,
     NotLiteralEvaluable,
     NotLiteralNameException,
-    DoubleAssignmentException,
 )
-from .hpm_db import (
-    HyperParameterOccurrence,
-    HyperParameterDB,
-    HyperParameterPriority,
-    P,
-    HyperParameterDBLambdas,
-    L,
-)
-
+from .source_helper import SourceHelper
 
 # -- Data Structures
 # Data structure hierarchy:
