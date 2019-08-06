@@ -43,6 +43,8 @@ release:
         - doc
     script:
         - make wheel
+        - echo "${DEVPI_URL}"
+        - echo ${DEVPI_URL}
         - devpi use "${DEVPI_URL}" 
         - devpi login "${DEVPI_LOGIN}" --password="${DEVPI_PASSWORD}"
         - devpi upload dist/*.whl
