@@ -1,4 +1,3 @@
-import sys
 from types import ModuleType
 
 from .hpm import HyperParameterManager

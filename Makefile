@@ -10,8 +10,9 @@ test:
 	    hpman tests
 
 format:
-	isort -rc hpman tests
-	black hpman tests
+	autoflake -r -i examples hpman tests
+	isort -rc examples hpman tests
+	black examples hpman tests
 
 style-check:
 	black --diff --check .
