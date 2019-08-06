@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import os
 import argparse
-
-from hpman.m import _
+import os
 
 import lib
+from hpman.m import _
 
 
 def main():
