@@ -179,22 +179,25 @@ class HyperParameterManager:
                 and isinstance(node.func, ast.Name)
                 and (node.func.id == self.placeholder)
             ):
+                # Check the number of positional arguments
                 if len(node.args) < 1 or len(node.args) > 2:
                     raise Exception(
-                        "number of invoking args should be in range [1, 2], (was {} args), {}:L{}".format(
+                        "number of positional args should be in range [1, 2], (was {} args), {}:L{}".format(
                             len(node.args), filename, node.lineno
                         )
                     )
 
+                # Check hyperparameter name
                 if not isinstance(node.args[0], ast.Str):
                     raise NotLiteralNameException(
                         "hp-name should be literal-string: L{}".format(node.lineno)
                     )
 
+                # Literal evaluate the hyperparameter naem
                 name = ast.literal_eval(node.args[0])
                 lineno = node.lineno
 
-                # parse name and default value
+                # Parse the name and the default value
                 ast_node = None
                 if len(node.args) == 2:
                     ast_node = node.args[1]
@@ -206,7 +209,7 @@ class HyperParameterManager:
                 else:
                     value = EmptyValue()
 
-                # parse hints
+                # Parse hints
                 # IMPORTANT: we demand hints to be literal evaluable (for now)
                 hints = {}
                 if hasattr(node, "keywords"):
@@ -224,6 +227,7 @@ class HyperParameterManager:
                             )
                         hints[k.arg] = v
 
+                # Construct an occurrence
                 occ = HyperParameterOccurrence(
                     {
                         "name": name,

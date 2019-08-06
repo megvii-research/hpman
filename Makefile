@@ -16,7 +16,7 @@ format:
 
 style-check:
 	black --diff --check hpman examples tests
-	flake8 --ignore E501,E203,F401,W503,W504 hpman examples tests
+	flake8 --ignore E501,E203,F401,W503,W504 --radon-max-cc 13 hpman examples tests 
 
 serve-coverage-report:
 	cd htmlcov && python3 -m http.server
