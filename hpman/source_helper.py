@@ -73,8 +73,8 @@ class SourceHelper:
         """One-Line-Of-Code-Centric formatting.
 
         :param lineno: line to be displayed
-        :param before: number of lines before *lineno* 
-        :param after: number of lines after *lineno* 
+        :param before: number of lines before *lineno*
+        :param after: number of lines after *lineno*
 
         :return: formatted string of source code
         """

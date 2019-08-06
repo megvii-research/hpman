@@ -20,7 +20,7 @@ P = HyperParameterPriority
 
 class HyperParameterOccurrence(AttrDict):
     """A single occurrence of a statically pasred hyperparameter. Subclasses
-    dict. 
+    dict.
     """
 
     name = None
@@ -346,27 +346,33 @@ class HyperParameterDB(list):
 class HyperParameterDBLambdas:
     # -- sort lambdas
     # sort first by priority, then by value non-emptiness
-    value_priority = lambda row: -(
-        row.priority * 10 - isinstance(row.value, EmptyValue)
-    )
+    def value_priority(row):
+        return -(row.priority * 10 - isinstance(row.value, EmptyValue))
 
-    order_by = lambda column: (lambda row: getattr(row, column))
+    def order_by(column):
+        return lambda row: getattr(row, column)
 
     # -- select lambdas
-    has_default_value = lambda row: not isinstance(row.value, EmptyValue)
+    def has_default_value(row):
+        return not isinstance(row.value, EmptyValue)
 
-    exist_attr = lambda attr: (
-        lambda row: hasattr(row, attr) and (getattr(row, attr) is not None)
-    )
+    def exist_attr(attr):
+        return lambda row: hasattr(row, attr) and (getattr(row, attr) is not None)
 
-    of_name = lambda name: (lambda row: row.name == name)
+    def of_name(name):
+        return lambda row: row.name == name
 
-    of_name_prefix = lambda prefix: (lambda row: row.name.startswith(prefix))
-    of_name_suffix = lambda suffix: (lambda row: row.name.endswith(suffix))
+    def of_name_prefix(prefix):
+        return lambda row: row.name.startswith(prefix)
 
-    of_value = lambda value: (lambda row: row.value == value)
+    def of_name_suffix(suffix):
+        return lambda row: row.name.endswith(suffix)
 
-    of_priority = lambda priority: (lambda row: row.priority == priority)
+    def of_value(value):
+        return lambda row: row.value == value
+
+    def of_priority(priority):
+        return lambda row: row.priority == priority
 
     @classmethod
     def apply_column(cls, column, func):

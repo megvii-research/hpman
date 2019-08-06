@@ -252,7 +252,7 @@ class HyperParameterManager:
 
     def get_value(self, name: str, *, raise_exception: bool = True) -> object:
         """Get the authoritative value of a hyperparameter.
-        Will raise an exception if value does not exist by default. 
+        Will raise an exception if value does not exist by default.
 
         :param hp_name: The name of the hyperparameter
         :param raise_exception: Defaults to True; set false to suppress
