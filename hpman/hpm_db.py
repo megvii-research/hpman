@@ -1,17 +1,17 @@
 import ast
-import sys
 import collections
+import enum
+import functools
 import glob
 import os
-import functools
 import re
-import enum
-from typing import Union, Dict, List, Callable, Optional
+import sys
+from typing import Callable, Dict, List, Optional, Union
 
 from attrdict import AttrDict
 
+from .primitives import DoubleAssignmentException, EmptyValue
 from .source_helper import SourceHelper
-from .primitives import EmptyValue, DoubleAssignmentException
 
 
 class HyperParameterPriority(enum.IntEnum):

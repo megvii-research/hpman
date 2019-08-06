@@ -1,9 +1,7 @@
-import unittest
-from hpman import SourceHelper
-
-
 import os
+import unittest
 
+from hpman import SourceHelper
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
