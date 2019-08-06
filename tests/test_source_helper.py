@@ -16,6 +16,6 @@ class TestSourceHelper(unittest.TestCase):
         SourceHelper.from_file(f("test_files/all_in_one.py"))
 
     def test_source_helper_formatters(self):
-        sh = SourceHelper("a=1\nc=123\n")
+        SourceHelper("a=1\nc=123\n")
         SourceHelper.format_given_source_and_lineno("a=1", 1)
         SourceHelper.format_given_filepath_and_lineno(f("test_files/all_in_one.py"), 2)

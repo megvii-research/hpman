@@ -1,4 +1,3 @@
-import random
 import unittest
 
 import hpman
@@ -11,13 +10,6 @@ class TestHPMDB(unittest.TestCase):
         for d in data:
             db.push_occurrence(HyperParameterOccurrence(**d))
         return db
-
-    def _make_random_db(self, seed):
-        s = random.getstate()
-
-        random.seed(seed)
-        n = random.randint(10, 20)
-        random.setstate(s)
 
     def setUp(self):
         self.db = self._make_db(
