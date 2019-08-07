@@ -518,3 +518,13 @@ pip install -r requirements.dev.txt
 ```bash
 pre-commit install
 ```
+
+3. To format your source code
+```base
+make format
+```
+
+3. To check the coding style
+```base
+make style-check
+```
