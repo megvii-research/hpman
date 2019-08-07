@@ -5,7 +5,7 @@ from hpman import HyperParameterManager
 
 class TestParse(unittest.TestCase):
     def test_hpm_zoo_import(self):
-        from hpman.m import _, __, ___, _____, asdf, asdfkj
+        from hpman.m import _, __, ___, _____, asdf, asdfkj  # type: ignore
 
         self.assertIsInstance(_, HyperParameterManager)
         self.assertEqual(_.placeholder, "_")

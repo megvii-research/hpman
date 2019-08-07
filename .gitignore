@@ -19,3 +19,9 @@ eggs/
 # sphinx
 /docs/api
 /docs/_build
+
+# mypy cache
+.mypy_cache/
+
+# tmp files
+*~

@@ -1,9 +1,10 @@
 import collections
 import enum
 import functools
+import typing
 from typing import Callable, Dict, List, Optional, Union
 
-from attrdict import AttrDict
+from attrdict import AttrDict  # type: ignore
 
 from .primitives import DoubleAssignmentException, EmptyValue
 from .source_helper import SourceHelper
@@ -30,7 +31,7 @@ class HyperParameterOccurrence(AttrDict):
     """Value of the hyperparameter. An instance of :class:`.primitives.EmptyValue`
     should present if value is not set."""
 
-    priority = None
+    priority = None  # type: HyperParameterPriority
     """Priority of this hyperparameter occurrence. The value of the highest
     priority of all the occurrences of the same hyperparameter will be denoted
     as "the value of this hyperparameter". See :class:`HyperParameterPriority`
@@ -120,7 +121,9 @@ class HyperParameterDB(list):
 
         :param column: The attribute to be grouped by.
         """
-        groups = collections.defaultdict(HyperParameterDB)
+        groups = collections.defaultdict(
+            HyperParameterDB
+        )  # type: typing.DefaultDict[str, HyperParameterDB]
         for i in self:
             groups[getattr(i, column)].append(i)
         return groups
@@ -213,8 +216,8 @@ class HyperParameterDB(list):
         """Whether the db is empty"""
         return len(self) == 0
 
-    def sort(
-        self, key: Callable[[object], object], reverse=False
+    def sorted(
+        self, key: Callable[[HyperParameterOccurrence], int], reverse: bool = False
     ) -> "HyperParameterDB":
         """Sort the rows of the db. See builtin function `sorted`"""
         return HyperParameterDB(sorted(self, key=key, reverse=reverse))
@@ -346,36 +349,45 @@ class HyperParameterDB(list):
 class HyperParameterDBLambdas:
     # -- sort lambdas
     # sort first by priority, then by value non-emptiness
-    def value_priority(row):
+    @staticmethod
+    def value_priority(row: HyperParameterOccurrence):
         return -(row.priority * 10 - isinstance(row.value, EmptyValue))
 
-    def order_by(column):
+    @staticmethod
+    def order_by(column: str):
         return lambda row: getattr(row, column)
 
     # -- select lambdas
+    @staticmethod
     def has_default_value(row):
         return not isinstance(row.value, EmptyValue)
 
+    @staticmethod
     def exist_attr(attr):
         return lambda row: hasattr(row, attr) and (getattr(row, attr) is not None)
 
+    @staticmethod
     def of_name(name):
         return lambda row: row.name == name
 
+    @staticmethod
     def of_name_prefix(prefix):
         return lambda row: row.name.startswith(prefix)
 
+    @staticmethod
     def of_name_suffix(suffix):
         return lambda row: row.name.endswith(suffix)
 
+    @staticmethod
     def of_value(value):
         return lambda row: row.value == value
 
+    @staticmethod
     def of_priority(priority):
         return lambda row: row.priority == priority
 
-    @classmethod
-    def apply_column(cls, column, func):
+    @staticmethod
+    def apply_column(column, func):
         @functools.wraps(func)
         def wrapper(row):
             old_value = getattr(row, column)
@@ -384,18 +396,18 @@ class HyperParameterDBLambdas:
 
         return wrapper
 
-    @classmethod
-    def land(cls, *args):
+    @staticmethod
+    def land(*args):
         """Logical and"""
         return lambda row: all(f(row) for f in args)
 
-    @classmethod
-    def lor(cls, *args):
+    @staticmethod
+    def lor(*args):
         """Logical or"""
         return lambda row: any(f(row) for f in args)
 
-    @classmethod
-    def lnot(cls, func):
+    @staticmethod
+    def lnot(func):
         """Logical not"""
         return lambda row: not func(row)
 

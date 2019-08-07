@@ -3,6 +3,9 @@
 
 seed-isort-config
 isort
+autoflake
+flake8
+mypy
 
 pytest
 pytest-cov

@@ -1,8 +1,9 @@
 from types import ModuleType
+from typing import Dict, List
 
 from .hpm import HyperParameterManager
 
-hpm_zoo = {}
+hpm_zoo = {}  # type: Dict[str, HyperParameterManager]
 
 
 class HPMZooModule(ModuleType):
@@ -18,5 +19,5 @@ class HPMZooModule(ModuleType):
         hpm_zoo[name] = HyperParameterManager(name)
         return hpm_zoo[name]
 
-    __path__ = []
+    __path__ = []  # type: List[str]
     __file__ = __file__
