@@ -108,7 +108,7 @@ class SourceHelper:
         cls,
         filename: str,
         source: str,
-        lineno: str,
+        lineno: int,
         *,
         indent_spaces: int = 0,
         **kwargs

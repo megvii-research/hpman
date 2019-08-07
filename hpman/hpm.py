@@ -1,7 +1,7 @@
 import ast
 import glob
 import os
-from typing import Optional
+from typing import Optional, Set
 
 from .hpm_db import (
     HyperParameterDB,
@@ -45,15 +45,15 @@ class HyperParameterManager:
     Trilogy"
     """
 
-    placeholder = None
+    placeholder = None  # type: str
     """Placeholder name of the HyperParameterManager object.
     """
 
-    db = None
+    db = None  # type: HyperParameterDB
     """Hyperparameter database. ANYTHING you want is here.
     """
 
-    def __init__(self, placeholder: str, db: HyperParameterDB = None):
+    def __init__(self, placeholder: str):
         """Create a hyperparameter manager.
 
         :param placeholder: placeholder name of this HyperParameterManager
@@ -64,7 +64,7 @@ class HyperParameterManager:
         self.placeholder = placeholder
 
         # The "Hyperparameter Value Triology"
-        self.db = db or HyperParameterDB()
+        self.db = HyperParameterDB()
 
     def parse_file(self, path: str) -> "HyperParameterManager":
         """Parse given file to extract hyperparameter settings.
@@ -78,7 +78,7 @@ class HyperParameterManager:
         else:
             paths = path
 
-        parsing_files = set()
+        parsing_files = set()  # type: Set[str]
         for _path in paths:
             if os.path.isdir(_path):
                 for filename in sorted(
@@ -263,7 +263,7 @@ class HyperParameterManager:
             exception. In this case, the missing value will be an instance
             of :class:`.primitives.EmptyValue`
         """
-        v = self.db.select(lambda row: row.name == name).sort(L.value_priority)
+        v = self.db.select(lambda row: row.name == name).sorted(L.value_priority)
         if len(v) == 0:
             value = EmptyValue()
         else:
@@ -280,7 +280,7 @@ class HyperParameterManager:
         :return: a :class:`.hpm_db.HyperParameterOccurrence` object or None
         """
 
-        s = self.db.select(L.of_name(name)).sort(L.value_priority)
+        s = self.db.select(L.of_name(name)).sorted(L.value_priority)
         return None if s.empty() else s[0]
 
     def get_values(self) -> dict:
@@ -291,7 +291,7 @@ class HyperParameterManager:
 
         # It is guaranteed to have at least one element using group_by
         return {
-            k: d.sort(L.value_priority)[0]["value"]
+            k: d.sorted(L.value_priority)[0]["value"]
             for k, d in self.db.group_by("name").items()
         }
 
