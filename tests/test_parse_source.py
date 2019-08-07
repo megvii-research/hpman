@@ -1,6 +1,7 @@
-import unittest
-import hpman
 import ast
+import unittest
+
+import hpman
 
 
 class TestParseSource(unittest.TestCase):

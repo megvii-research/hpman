@@ -1,28 +1,23 @@
 import ast
-import sys
-import collections
 import glob
 import os
-import copy
-from typing import Union, Dict, List, Callable, Optional
+from typing import Optional, Set
 
-from .source_helper import SourceHelper
-
+from .hpm_db import (
+    HyperParameterDB,
+    HyperParameterDBLambdas,
+    HyperParameterOccurrence,
+    HyperParameterPriority,
+    L,
+    P,
+)
 from .primitives import (
+    DoubleAssignmentException,
     EmptyValue,
     NotLiteralEvaluable,
     NotLiteralNameException,
-    DoubleAssignmentException,
 )
-from .hpm_db import (
-    HyperParameterOccurrence,
-    HyperParameterDB,
-    HyperParameterPriority,
-    P,
-    HyperParameterDBLambdas,
-    L,
-)
-
+from .source_helper import SourceHelper
 
 # -- Data Structures
 # Data structure hierarchy:
@@ -50,15 +45,15 @@ class HyperParameterManager:
     Trilogy"
     """
 
-    placeholder = None
+    placeholder = None  # type: str
     """Placeholder name of the HyperParameterManager object.
     """
 
-    db = None
+    db = None  # type: HyperParameterDB
     """Hyperparameter database. ANYTHING you want is here.
     """
 
-    def __init__(self, placeholder: str, db: HyperParameterDB = None):
+    def __init__(self, placeholder: str):
         """Create a hyperparameter manager.
 
         :param placeholder: placeholder name of this HyperParameterManager
@@ -69,7 +64,7 @@ class HyperParameterManager:
         self.placeholder = placeholder
 
         # The "Hyperparameter Value Triology"
-        self.db = db or HyperParameterDB()
+        self.db = HyperParameterDB()
 
     def parse_file(self, path: str) -> "HyperParameterManager":
         """Parse given file to extract hyperparameter settings.
@@ -83,7 +78,7 @@ class HyperParameterManager:
         else:
             paths = path
 
-        parsing_files = set()
+        parsing_files = set()  # type: Set[str]
         for _path in paths:
             if os.path.isdir(_path):
                 for filename in sorted(
@@ -184,22 +179,25 @@ class HyperParameterManager:
                 and isinstance(node.func, ast.Name)
                 and (node.func.id == self.placeholder)
             ):
+                # Check the number of positional arguments
                 if len(node.args) < 1 or len(node.args) > 2:
                     raise Exception(
-                        "number of invoking args should be in range [1, 2], (was {} args), {}:L{}".format(
+                        "number of positional args should be in range [1, 2], (was {} args), {}:L{}".format(
                             len(node.args), filename, node.lineno
                         )
                     )
 
+                # Check hyperparameter name
                 if not isinstance(node.args[0], ast.Str):
                     raise NotLiteralNameException(
                         "hp-name should be literal-string: L{}".format(node.lineno)
                     )
 
+                # Literal evaluate the hyperparameter naem
                 name = ast.literal_eval(node.args[0])
                 lineno = node.lineno
 
-                # parse name and default value
+                # Parse the name and the default value
                 ast_node = None
                 if len(node.args) == 2:
                     ast_node = node.args[1]
@@ -211,7 +209,7 @@ class HyperParameterManager:
                 else:
                     value = EmptyValue()
 
-                # parse hints
+                # Parse hints
                 # IMPORTANT: we demand hints to be literal evaluable (for now)
                 hints = {}
                 if hasattr(node, "keywords"):
@@ -229,6 +227,7 @@ class HyperParameterManager:
                             )
                         hints[k.arg] = v
 
+                # Construct an occurrence
                 occ = HyperParameterOccurrence(
                     {
                         "name": name,
@@ -257,14 +256,14 @@ class HyperParameterManager:
 
     def get_value(self, name: str, *, raise_exception: bool = True) -> object:
         """Get the authoritative value of a hyperparameter.
-        Will raise an exception if value does not exist by default. 
+        Will raise an exception if value does not exist by default.
 
         :param hp_name: The name of the hyperparameter
         :param raise_exception: Defaults to True; set false to suppress
             exception. In this case, the missing value will be an instance
             of :class:`.primitives.EmptyValue`
         """
-        v = self.db.select(lambda row: row.name == name).sort(L.value_priority)
+        v = self.db.select(lambda row: row.name == name).sorted(L.value_priority)
         if len(v) == 0:
             value = EmptyValue()
         else:
@@ -281,7 +280,7 @@ class HyperParameterManager:
         :return: a :class:`.hpm_db.HyperParameterOccurrence` object or None
         """
 
-        s = self.db.select(L.of_name(name)).sort(L.value_priority)
+        s = self.db.select(L.of_name(name)).sorted(L.value_priority)
         return None if s.empty() else s[0]
 
     def get_values(self) -> dict:
@@ -292,7 +291,7 @@ class HyperParameterManager:
 
         # It is guaranteed to have at least one element using group_by
         return {
-            k: d.sort(L.value_priority)[0]["value"]
+            k: d.sorted(L.value_priority)[0]["value"]
             for k, d in self.db.group_by("name").items()
         }
 

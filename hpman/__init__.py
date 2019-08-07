@@ -1,29 +1,28 @@
+import sys
+
+from .__version__ import __author__, __author_email__, __title__, __url__, __version__
 from .hpm import (
     DoubleAssignmentException,
-    NotLiteralNameException,
     EmptyValue,
-    NotLiteralEvaluable,
-    SourceHelper,
     HyperParameterManager,
+    NotLiteralEvaluable,
+    NotLiteralNameException,
+    SourceHelper,
 )
-
 from .hpm_db import (
-    HyperParameterOccurrence,
     HyperParameterDB,
-    HyperParameterPriority,
-    P,
     HyperParameterDBLambdas,
+    HyperParameterOccurrence,
+    HyperParameterPriority,
     L,
+    P,
 )
 
 # moneky patch to enable ``from hpman.m import whatever```
 from .hpm_zoo_monkey_patch import HPMZooModule
-import sys
 
 m = HPMZooModule(__name__ + ".m", HPMZooModule.__doc__)
 sys.modules[m.__name__] = m
 
 del sys
 del HPMZooModule
-
-from .__version__ import __title__, __version__, __author__, __author_email__, __url__

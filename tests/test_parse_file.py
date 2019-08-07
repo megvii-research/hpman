@@ -1,7 +1,7 @@
-import unittest
-import hpman
 import os
+import unittest
 
+import hpman
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 

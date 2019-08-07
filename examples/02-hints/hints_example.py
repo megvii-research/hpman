@@ -1,7 +1,7 @@
-from hpman.m import _
-from hpman.hpm_db import L
-
 import argparse
+
+from hpman.hpm_db import L
+from hpman.m import _
 
 _("optimizer", "adam", choices=["adam", "sgd"])
 
