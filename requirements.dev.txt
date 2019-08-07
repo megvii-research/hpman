@@ -5,6 +5,7 @@ seed-isort-config
 isort
 autoflake
 flake8
+radon
 mypy
 
 pytest
