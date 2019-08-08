@@ -40,11 +40,9 @@ class TestParse(unittest.TestCase):
         self.assertEqual(len(m.db), 2 * 9)
 
     def test_parse_file_with_non_exist_path(self):
-        try:
-            m = self._create_hpm().parse_file("none_exist_path")
-            self.assertEqual(len(m.db), 0)
-        except Exception as e:
-            self.fail("path not existed cause failure: {}".format(e))
+        self.assertRaises(
+            FileNotFoundError, self._create_hpm().parse_file, "none_exist_path"
+        )
 
     def test_parse_file_with_not_py_path(self):
         m = self._create_hpm().parse_file(f("test_files/no_py"))
