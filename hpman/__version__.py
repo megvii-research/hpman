@@ -1,5 +1,5 @@
 __title__ = "hpman"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __author__ = "EMTF"
 __author_email__ = "emtf@megvii.com"
 __url__ = "https://github.com/megvii/hpman"
