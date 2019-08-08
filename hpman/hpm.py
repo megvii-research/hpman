@@ -90,6 +90,8 @@ class HyperParameterManager:
                 # _path is a file
                 if _path not in parsing_files:
                     parsing_files.add(_path)
+            else:
+                raise FileNotFoundError(_path)
 
         for _file in sorted(parsing_files):  # sort for debugging stability
             with open(_file) as f:
