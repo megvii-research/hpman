@@ -2,6 +2,7 @@ import ast
 import unittest
 
 import hpman
+from hpman.primitives import ImpossibleTree
 
 
 class TestParseSource(unittest.TestCase):
@@ -120,26 +121,14 @@ class TestParseSource(unittest.TestCase):
         )
 
     def test_parse_normal_multi_assignment(self):
-        try:
-            self.hpm.parse_source("_('hp1', 1)\n" "_('hp2', 2)")
-        except Exception as e:
-            self.fail("parse failed with exception: {}".format(e))
+        self.hpm.parse_source("_('hp1', 1)\n" "_('hp2', 2)")
 
     def test_parse_assign_withvalue_and_novalue(self):
-        try:
-            m = self.hpm.parse_source("_('hp1', 1)\n" "_('hp1')")
-            self.assertEqual(m.get_value("hp1"), 1)
-        except Exception as e:
-            self.fail("parse failed with exception: {}".format(e))
+        m = self.hpm.parse_source("_('hp1', 1)\n" "_('hp1')")
+        self.assertEqual(m.get_value("hp1"), 1)
 
-        try:
-            m = self.hpm.parse_source("_('hp2')\n" "_('hp2', 2)")
-            # Note: it looks like hp2 will assign correct value in parsing time,
-            #   but it doesn't work in runtime since first _ of hp2 should
-            #   return value if 'external-set' doesn't have
-            self.assertEqual(m.get_value("hp2"), 2)
-        except Exception as e:
-            self.fail("parse failed with exception: {}".format(e))
+        m = self.hpm.parse_source("_('hp2')\n" "_('hp2', 2)")
+        self.assertEqual(m.get_value("hp2"), 2)
 
     def test_parse_double_assignment(self):
         self.assertRaises(
@@ -175,23 +164,20 @@ class TestParseSource(unittest.TestCase):
         )
 
     def test_parse_underscore_without_value(self):
-        try:
-            m = self.hpm.parse_source("_('hp1')\n" "_('hp2')")
-            self.assertIsInstance(
-                m.get_value("hp1", raise_exception=False), hpman.EmptyValue
-            )
-            self.assertIsInstance(
-                m.get_value("hp2", raise_exception=False), hpman.EmptyValue
-            )
-        except Exception as e:
-            self.fail("parse failed with exception: {}".format(e))
+        m = self.hpm.parse_source("_('hp1')\n" "_('hp2')")
+        self.assertIsInstance(
+            m.get_value("hp1", raise_exception=False), hpman.EmptyValue
+        )
+        self.assertIsInstance(
+            m.get_value("hp2", raise_exception=False), hpman.EmptyValue
+        )
 
     def test_parse_underscore_with_multi_args(self):
         self.assertRaises(Exception, self.hpm.parse_source, "_('hp', 1, 2)")
 
     def test_parse_no_underscores(self):
         m = self.hpm.parse_source("abc")
-        self.assertTrue(m.db.empty())
+        self.assertTrue(m.tree.empty)
 
     def test_parse_underscore_along_with_spaces(self):
         m = self.hpm.parse_source("_  ('hp' , 1) ")
@@ -199,9 +185,9 @@ class TestParseSource(unittest.TestCase):
 
     def test_parse_underscore_underscore(self):
         m = self.hpm.parse_source("__('hp' , 1) ")
-        self.assertTrue(m.db.empty())
+        self.assertTrue(m.tree.empty)
 
-    def _run(self, test_datas):
+    def _run(self, test_data):
         """test_data spec:
             {
                 '_(key, value)': [
@@ -210,31 +196,26 @@ class TestParseSource(unittest.TestCase):
                 ...
             }
         """
-        try:
-            for expression, kv in test_datas.items():
-                name = kv[0]
-                value = kv[1]
-                ast_node_type = kv[2]
+        for expression, kv in test_data.items():
+            name = kv[0]
+            value = kv[1]
+            ast_node_type = kv[2]
 
-                m = self.hpm.parse_source(expression)
-                # check default value
-                if isinstance(value, hpman.NotLiteralEvaluable):
-                    self.assertEqual(type(m.get_value(name)), hpman.NotLiteralEvaluable)
-                else:
-                    self.assertEqual(m.get_value(name), value)
+            m = self.hpm.parse_source(expression)
+            # check default value
+            if isinstance(value, hpman.NotLiteralEvaluable):
+                self.assertEqual(type(m.get_value(name)), hpman.NotLiteralEvaluable)
+            else:
+                self.assertEqual(m.get_value(name), value)
 
-                # check ast node type
-                self.assertEqual(
-                    type(m.get_occurrence_of_value(name)["ast_node"]), ast_node_type
-                )
+            # check ast node type
+            self.assertEqual(type(m.get_occurrence(name).ast_node), ast_node_type)
 
-                # check hints
-                if len(kv) >= 4:
-                    hints = kv[3]
-                    parsed_hints = m.get_occurrence_of_value(name)["hints"]
-                    self.assertDictEqual(parsed_hints, hints)
-        except Exception as e:
-            self.fail("parse failed with exception: {}".format(e))
+            # check hints
+            if len(kv) >= 4:
+                hints = kv[3]
+                parsed_hints = m.get_occurrence(name).hints
+                self.assertDictEqual(parsed_hints, hints)
 
     def test_exists(self):
         self.hpm.parse_source(

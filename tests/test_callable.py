@@ -25,7 +25,7 @@ class TestCallable(unittest.TestCase):
         class test_func:
             pass
 
-        test_datas = [
+        test_data = [
             1,
             3.14,
             1e-5,
@@ -38,7 +38,7 @@ class TestCallable(unittest.TestCase):
             test_func,
         ]
 
-        for value in test_datas:
+        for value in test_data:
             _ = hpman.HyperParameterManager("_")
 
             a = _("a", value)

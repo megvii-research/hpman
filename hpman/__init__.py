@@ -5,16 +5,16 @@ from .hpm import (
     DoubleAssignmentException,
     EmptyValue,
     HyperParameterManager,
+    ImpossibleTree,
     NotLiteralEvaluable,
     NotLiteralNameException,
     SourceHelper,
 )
 from .hpm_db import (
-    HyperParameterDB,
-    HyperParameterDBLambdas,
     HyperParameterOccurrence,
     HyperParameterPriority,
-    L,
+    HyperParamNode,
+    HyperParamTree,
     P,
 )
 
