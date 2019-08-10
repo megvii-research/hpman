@@ -29,6 +29,46 @@ class TestSetGet(unittest.TestCase):
         for name, value in test_datas.items():
             self.assertEqual(self.hpm.get_value(name), value)
 
+    def test_get_tree(self):
+        test_datas = {
+            "a.a": 1,
+            "a.ab": [0.4, 5],
+            "b.c": "abc",
+            "a.b.c": "abcde",
+            "a.b.c5": print,
+        }
+
+        self.hpm.set_values(test_datas)
+        tree = self.hpm.get_tree()
+        self.assertDictEqual(
+            tree,
+            {
+                "a": {"a": 1, "ab": [0.4, 5], "b": {"c": "abcde", "c5": print}},
+                "b": {"c": "abc"},
+            },
+        )
+        self.hpm.set_value("a", 0.5)
+        with self.assertRaises(ValueError):
+            self.hpm.get_tree()
+
+    def test_set_tree(self):
+        test_tree = {
+            "a": {"a": 1, "ab": [0.4, 5], "b": {"c": "abcde", "c5": print}},
+            "b": {"c": "abc"},
+        }
+
+        test_datas = {
+            "a.a": 1,
+            "a.ab": [0.4, 5],
+            "b.c": "abc",
+            "a.b.c": "abcde",
+            "a.b.c5": print,
+        }
+
+        self.hpm.set_tree(test_tree)
+        for name, value in test_datas.items():
+            self.assertEqual(self.hpm.get_value(name), value)
+
     def test_double_set(self):
         double_set_data = [("a", 1), ("a", 2), ("b", 3.0), ("b", "str")]
         try:
