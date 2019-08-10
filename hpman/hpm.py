@@ -1,7 +1,7 @@
 import ast
 import glob
 import os
-from typing import Optional, Set
+from typing import Dict, List, Mapping, Optional, Set, Union
 
 from .hpm_db import (
     HyperParameterDB,
@@ -16,6 +16,7 @@ from .primitives import (
     EmptyValue,
     NotLiteralEvaluable,
     NotLiteralNameException,
+    Primitive,
 )
 from .source_helper import SourceHelper
 
@@ -28,6 +29,9 @@ from .source_helper import SourceHelper
 #                 |
 #                 v
 #     HyperParameterManager
+
+FlatMapping = Mapping[str, Primitive]
+TreeMapping = Mapping[str, Union[Primitive, "TreeMapping"]]  # type: ignore
 
 
 class HyperParameterManager:
@@ -256,7 +260,7 @@ class HyperParameterManager:
             return False
         return True
 
-    def get_value(self, name: str, *, raise_exception: bool = True) -> object:
+    def get_value(self, name: str, *, raise_exception: bool = True) -> Primitive:
         """Get the authoritative value of a hyperparameter.
         Will raise an exception if value does not exist by default.
 
@@ -285,7 +289,7 @@ class HyperParameterManager:
         s = self.db.select(L.of_name(name)).sorted(L.value_priority)
         return None if s.empty() else s[0]
 
-    def get_values(self) -> dict:
+    def get_values(self) -> FlatMapping:
         """Get all current available hyperparameters and their values.
 
         :return: dict of name to value.
@@ -297,7 +301,52 @@ class HyperParameterManager:
             for k, d in self.db.group_by("name").items()
         }
 
-    def set_value(self, name: str, value: object) -> "HyperParameterManager":
+    def get_tree(self) -> TreeMapping:
+        """Get all current available hyperparameters and their values
+        as a tree mapping, this is useful for nested hyperparameters.
+
+        :return: a nested dict of name to value
+        :raises: ValueError
+        """
+
+        def _create_tree(db, keys: List[str], val):
+            if len(keys) == 0:
+                return val
+            key, *rest = keys
+            if key in db:
+                res = {key: _create_tree(db[key], rest, val)}
+            else:
+                res = {key: _create_tree({}, rest, val)}
+
+            db.update(res)
+            return db
+
+        # Key syntax check
+        # avoid impossible tree such as `dataset=5`, `dataset.aug=6`
+        flatmap = self.get_values()
+        keys = sorted(flatmap.keys())
+        for i, key in enumerate(keys[:-1]):
+            tokens = key.split(".")
+            j = i + 1
+            for test_key in keys[j:]:
+                t_tokens = test_key.split(".")
+                if tokens[0] != t_tokens[0]:
+                    # no prefix, safe break
+                    break
+                if t_tokens[: len(tokens)] == tokens:
+                    # keys has common prefix, no way to build tree
+                    raise ValueError(
+                        "Impossible tree: both `{}` and `{}` are set.".format(
+                            key, test_key
+                        )
+                    )
+
+        result = {}  # type: Dict[str, TreeMapping]
+        for key, val in self.get_values().items():
+            _create_tree(result, key.split("."), val)
+        return result
+
+    def set_value(self, name: str, value: Primitive) -> "HyperParameterManager":
         """Runtime setter. Set value with the highest priority.
         """
         self.db.push_occurrence(
@@ -307,11 +356,31 @@ class HyperParameterManager:
         )
         return self
 
-    def set_values(self, values: dict) -> "HyperParameterManager":
+    def set_values(self, values: FlatMapping) -> "HyperParameterManager":
         """Runtime setter. Set a dict of values with the highest priority.
         """
         for k, v in values.items():
             self.set_value(k, v)
+        return self
+
+    def set_tree(self, tree: TreeMapping) -> "HyperParameterManager":
+        """Runtime setter.
+        Set a tree dict of nested values with the highest priority.
+        """
+
+        def _walk(cur: str, tree_or_node: Union[TreeMapping, Primitive]):
+            if not isinstance(tree_or_node, Mapping):
+                self.set_value(cur, tree_or_node)
+                return
+
+            _tree = tree_or_node
+            for key, val in _tree.items():
+                new_key = "{}.{}".format(cur, key)
+                _walk(new_key, val)
+
+        for key, subtree in tree.items():
+            _walk(key, subtree)
+
         return self
 
     def __call__(self, hp_name: str, hp_value: EmptyValue = EmptyValue(), **hints):
