@@ -1,3 +1,6 @@
+from typing import Any, AnyStr, Sequence, Union
+
+
 # -- Exceptions
 class DoubleAssignmentException(Exception):
     pass
@@ -14,3 +17,9 @@ class NotLiteralEvaluable(Exception):
 # -- Sentinels
 class EmptyValue:
     pass
+
+
+# -- Types
+Scalar = Union[None, int, float, bool, AnyStr, Any, EmptyValue]
+Vector = Sequence[Scalar]
+Primitive = Union[Scalar, Vector]
