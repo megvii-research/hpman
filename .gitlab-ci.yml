@@ -38,12 +38,12 @@ pages:
 
 release:
     stage: deploy
-    dependencies: 
+    dependencies:
         - unittest
         - doc
     script:
         - make wheel
-        - devpi use "${DEVPI_URL}" 
+        - devpi use "${DEVPI_URL}"
         - devpi login "${DEVPI_LOGIN}" --password="${DEVPI_PASSWORD}" && devpi upload dist/*
     only:
         - tags
