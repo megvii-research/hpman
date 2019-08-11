@@ -369,6 +369,8 @@ class HyperParameterManager:
     def set_tree(self, tree: TreeMapping) -> "HyperParameterManager":
         """Runtime setter.
         Set a tree dict of nested values with the highest priority.
+
+        :raises: ValueError
         """
 
         def _walk(cur: str, tree_or_node: Union[TreeMapping, Primitive]):
