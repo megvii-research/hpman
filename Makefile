@@ -16,8 +16,8 @@ format:
 
 style-check:
 	black --diff --check hpman examples tests
-	flake8 --ignore E501,E203,F401,W503,W504 --radon-max-cc 13 hpman examples tests 
-	mypy hpman 
+	flake8 --ignore E501,E203,F401,W503,W504 --radon-max-cc 13 hpman examples tests
+	mypy hpman
 
 serve-coverage-report:
 	cd htmlcov && python3 -m http.server
@@ -28,9 +28,8 @@ wheel:
 doc:
 	cd docs && ./gendoc.sh
 
-install:  
+install:
 	# install prerequisites
-	# TODO: 
+	# TODO:
 	#   1. install requirments
 	#   2. install pre-commit hook
-	

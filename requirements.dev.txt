@@ -1,16 +1,16 @@
 # XXX: since we need python3.5 compatibility, we drop the requirements of black
 # black
 
-seed-isort-config
-isort
 autoflake
 flake8
-radon
+isort
+m2r
 mypy
+pre-commit
 
 pytest
 pytest-cov
-pre-commit
+radon
+seed-isort-config
 sphinx
 sphinx-rtd-theme
-m2r
