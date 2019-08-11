@@ -47,9 +47,18 @@ class TestSetGet(unittest.TestCase):
                 "b": {"c": "abc"},
             },
         )
+
+        # A tree compatible value set should work
+        self.hpm.set_value("a.d", 123)
+        self.hpm.get_tree()
+
+        # A tree incompatible value set should not work
         self.hpm.set_value("a", 0.5)
         with self.assertRaises(ValueError):
             self.hpm.get_tree()
+
+        # check normal get value works correctly
+        self.hpm.get_values()
 
     def test_set_tree(self):
         test_tree = {
@@ -68,6 +77,9 @@ class TestSetGet(unittest.TestCase):
         self.hpm.set_tree(test_tree)
         for name, value in test_datas.items():
             self.assertEqual(self.hpm.get_value(name), value)
+
+        with self.assertRaises(ValueError):
+            self.hpm.set_tree({"a": 2})
 
     def test_double_set(self):
         double_set_data = [("a", 1), ("a", 2), ("b", 3.0), ("b", "str")]

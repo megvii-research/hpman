@@ -55,14 +55,14 @@ class HyperParameterOccurrence(AttrDict):
     only present in parsed hyperparameters """
 
     # XXX: In python 3.6, we would use `attr_dict_bind` library to implement
-    #     attribute dict binding mechanism with user defined attributs
+    #     attribute dict binding mechanism with user defined attributes
     #     straighforward.
     #     However, to accommodate python 3.5, we implement the same function
     #     using `attrdict` along with the following ugly hacks.
     __defaults = {
         "name": None,
         # This empty value instance is vital; we rely on this exact sentinel
-        # object group all empty values.
+        # object to group all empty values.
         "value": EmptyValue(),
         "priority": None,
         "filename": None,
