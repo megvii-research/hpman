@@ -97,10 +97,10 @@ pip install hpman
 ```
 
 # Story
-Managing ever-changing hyperparameters is a pain in the a\*\*. 
-From the practice of performing enormous amount of deep learning experiments, 
+Managing ever-changing hyperparameters is a pain in the a\*\*.
+From the practice of performing enormous amount of deep learning experiments,
 we found two existing hyperparameter managing patterns of the utmost
-prevalence. 
+prevalence.
 
 ## Centralized HPM
 We call the first type "**centralized HPM**". It follows the way of
@@ -118,7 +118,7 @@ LR_DECAY_EPOCHS = [30, 60, 90]
 HIDDEN_CHANNELS = 128
 NUM_LAYERS = 5
 INPUT_CHANNELS = 784
-OUTPUT_CHANNELS = 10 
+OUTPUT_CHANNELS = 10
 ```
 
 ```python
@@ -129,11 +129,11 @@ import config
 def build_model():
     return nn.Sequence(
 	[
-	    nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS), 
+	    nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
 			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
 			nn.ReLU())
 	] + [
-	    nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS), 
+	    nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
 			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
 			nn.ReLU())
 	    for i in range(config.NUM_LAYERS - 1)
@@ -156,19 +156,19 @@ Engineering (NRE)](https://en.wikipedia.org/wiki/Non-recurring_engineering).
 In these cases, the "centralized HPM" reveals obvious drawbacks:
 1. Whenever you need to introduce a new hyperparameter, you must kind of
    "declare" it in the configuration file, while using it in some
-   deeply-nested easy-to-forget files. 
+   deeply-nested easy-to-forget files.
 2. Whenever you need to abandon an existing hyperparameter, you must not only
    remove all the apearances of that hyperparameter in some deeply-nested
    easy-to-forget files, but also remove it in the centralized configuration
    file.
 3. There's a "Heisenberg uncertainty principle" on hyperparameters: you cannot
-   know both what and where the hyperparameters are at the same time. 
+   know both what and where the hyperparameters are at the same time.
    The context around where the hyperparameter are used conveys valuable
-   information of the precise usecase of that hyperparameter. 
+   information of the precise usecase of that hyperparameter.
    You can either look it up in the code, or in the centralized config file.
 
 These drawbacks essentially requires the user to maintain a distributed data
-structure, which not only induces great mental burden doing experiments, 
+structure, which not only induces great mental burden doing experiments,
 but also be error-prone to bugs.
 
 
@@ -177,7 +177,7 @@ So researchers come to another solution: forget about config files; define and
 use whatever hyperparameters whenever you need, anywhere in the project. We
 call this "Distributed HPM".  However, this is hardly called "management"; it
 is more like anarchism: no management is the best management. This makes add a
-hyperparameter cheap: let yourself free and do whatever you want. 
+hyperparameter cheap: let yourself free and do whatever you want.
 
 > Let it go, let it go
 
@@ -192,10 +192,10 @@ def build_model():
 			nn.BatchNorm1d(hidden_channels),
 			nn.ReLU())
 	] + [
-	    nn.Sequence(nn.Linear(hidden_channels, hidden_channels), 
+	    nn.Sequence(nn.Linear(hidden_channels, hidden_channels),
 			nn.BatchNorm1d(hidden_channels),
 			nn.ReLU())
-	    for i in range(4)  # <-- hyperparameter 
+	    for i in range(4)  # <-- hyperparameter
 	] + [
 	    nn.Linear(hidden_channels, 10)  # <-- hyperparameter
 	]
@@ -356,7 +356,7 @@ from hpman.m import _
 hello = _  # this breaks the rule
 hello('a', 1)  # <-- hpman will not ware this 'a' hyperparameter.
 ```
-- Variables share the same name with `hpman.m` imports will be statically parsed by hpman, but will not work as expected at runtime. e.g.: 
+- Variables share the same name with `hpman.m` imports will be statically parsed by hpman, but will not work as expected at runtime. e.g.:
 
 ```python
 def func(*args, **kargs):
@@ -375,22 +375,22 @@ print(_.parse_file(__file__).get_values())
 
 ## Define Hyperparameters
 The most basic (and the most frequently used) function  of hpman is to
-define a hyperparameter. 
+define a hyperparameter.
 
 ```python
 from hpman.m import _
 
 def training_loop():
-    # training settings 
+    # training settings
     batch_size = _('batch_size', 128)
 
     # first use of `num_layer` is recommend to come with default value
     print('num_layers = {}'.format(_('num__layers', 50)))
 
     # use it directly without storing the values
-    if _('use_resnet', True):  
+    if _('use_resnet', True):
 	# second use of `num_layer` should not provide default value
-	for i in range(_('num_layers')):  
+	for i in range(_('num_layers')):
 	    pass
 ```
 
@@ -402,7 +402,7 @@ There are few caveats:
 3. The value of the hyperparameter can be arbitrary object (variable, lambda,
    string, whatever), but it is highly recommended to use only **literval
    values**, which is precisely defined by what `ast.literal_eval` function
-   accepts. It not makes the serialization of hyperparameters in downstream 
+   accepts. It not makes the serialization of hyperparameters in downstream
    frameworks (such as hpargparse) easier, but also improves interoperability
    of hyperparameter settings among different programming languages and
    frameworks. The readability of dumped hyperparameters will be more readable
@@ -410,8 +410,8 @@ There are few caveats:
 
 ## Static Parsing
 We employ static parsing to retrieve information of where and how you are using
-the hyperparameters in your source codes. It is employed by `_.parse_file` and 
-`_.parse_source`. 
+the hyperparameters in your source codes. It is employed by `_.parse_file` and
+`_.parse_source`.
 
 - `_.parse_file` accepts file paths, directory names, or a list of both.  It
   internally calls `_.parse_source`.
@@ -484,14 +484,14 @@ if __name__ == '__main__':
     value = oc['value']
 
     parser.add_argument('--optimizer', default=value, choices=choices)
-    args = parser.parse_args() 
+    args = parser.parse_args()
 
     print('optimizer: {}'.format(args.optimizer))
 ```
 
 usecase is as follows:
 ```bash
-$ python3 hints_example.py   
+$ python3 hints_example.py
 optimizer: adam
 $ python3 hints_example.py -h
 usage: hints_example.py [-h] [--optimizer {adam,sgd}]
