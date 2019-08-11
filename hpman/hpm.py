@@ -268,6 +268,9 @@ class HyperParameterManager:
         :param raise_exception: Defaults to True; set false to suppress
             exception. In this case, the missing value will be an instance
             of :class:`.primitives.EmptyValue`
+
+        :return: Return the stored value if found. Otherwise, if raise_exception is False,
+            an :class:`.primitives.EmptyValue` object is returned.
         """
         v = self.db.select(lambda row: row.name == name).sorted(L.value_priority)
         if len(v) == 0:
@@ -369,7 +372,26 @@ class HyperParameterManager:
         """
 
         def _walk(cur: str, tree_or_node: Union[TreeMapping, Primitive]):
+
+            descendants = self.db.select(L.of_name_prefix(cur + "."))
+
+            is_not_leaf = len(descendants) > 0
+            is_not_mapping = not isinstance(tree_or_node, Mapping)
+            if is_not_leaf and is_not_mapping:
+                raise ValueError(
+                    (
+                        "Impossible tree: `{}` has value `{}`, "
+                        "but you want set `{}` to `{}`."
+                    ).format(
+                        descendants[0].name, descendants[0].value, cur, tree_or_node
+                    )
+                )
+
             if not isinstance(tree_or_node, Mapping):
+                # NOTE: If we use `if is_not_mapping:`, the mypy type check
+                # would not be able to deduce the type of `tree_or_node` after
+                # this if block. It will complains about not having `.items()`
+                # method for `tree_or_node`.
                 self.set_value(cur, tree_or_node)
                 return
 
