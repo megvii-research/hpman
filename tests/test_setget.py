@@ -81,6 +81,23 @@ class TestSetGet(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.hpm.set_tree({"a": 2})
 
+    def test_confusion(self):
+        def get_output_give_input(data):
+            hpm = hpman.HyperParameterManager("_")
+            hpm.set_values(data)
+            return {"values": hpm.get_values(), "tree": hpm.get_tree()}
+
+        test_data = [{"a": {"b": {"c": 1}}}, {"a.b": {"c": 1}}, {"a.b.c": 1}]
+        outs = list(map(get_output_give_input, test_data))
+
+        # For the inputs above, trees are equal ...
+        for out in outs[1:]:
+            self.assertEqual(out["tree"], outs[0]["tree"])
+
+        # ... but their original values are not
+        for out in outs[1:]:
+            self.assertNotEqual(out["values"], outs[0]["values"])
+
     def test_double_set(self):
         double_set_data = [("a", 1), ("a", 2), ("b", 3.0), ("b", "str")]
         try:
