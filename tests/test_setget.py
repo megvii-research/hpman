@@ -14,7 +14,7 @@ class TestSetGet(unittest.TestCase):
         def foo():
             pass
 
-        test_datas = {
+        test_data = {
             "a": 1,
             "b": 0.3,
             "c": [1, 2, "a"],
@@ -24,13 +24,13 @@ class TestSetGet(unittest.TestCase):
             "h": foo,
             "f": print,
         }
-        self.hpm.set_values(test_datas)
+        self.hpm.set_values(test_data)
         self.hpm.get_values()
-        for name, value in test_datas.items():
+        for name, value in test_data.items():
             self.assertEqual(self.hpm.get_value(name), value)
 
     def test_get_tree(self):
-        test_datas = {
+        test_data = {
             "a.a": 1,
             "a.ab": [0.4, 5],
             "b.c": "abc",
@@ -38,7 +38,7 @@ class TestSetGet(unittest.TestCase):
             "a.b.c5": print,
         }
 
-        self.hpm.set_values(test_datas)
+        self.hpm.set_values(test_data)
         tree = self.hpm.get_tree()
         self.assertDictEqual(
             tree,
@@ -66,7 +66,7 @@ class TestSetGet(unittest.TestCase):
             "b": {"c": "abc"},
         }
 
-        test_datas = {
+        test_data = {
             "a.a": 1,
             "a.ab": [0.4, 5],
             "b.c": "abc",
@@ -75,7 +75,7 @@ class TestSetGet(unittest.TestCase):
         }
 
         self.hpm.set_tree(test_tree)
-        for name, value in test_datas.items():
+        for name, value in test_data.items():
             self.assertEqual(self.hpm.get_value(name), value)
 
         with self.assertRaises(ValueError):
