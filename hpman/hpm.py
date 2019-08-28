@@ -278,8 +278,13 @@ class HyperParameterManager:
         else:
             value = v[0]["value"]
 
-        if isinstance(value, EmptyValue) and raise_exception:
-            raise KeyError("`{}` not found".format(name))
+        if isinstance(value, EmptyValue):
+            candidate = self.get_tree(name)
+            if candidate:
+                return candidate
+
+            if raise_exception:
+                raise KeyError("`{}` not found".format(name))
         return value
 
     def get_occurrence_of_value(self, name: str) -> Optional[HyperParameterOccurrence]:
@@ -304,26 +309,8 @@ class HyperParameterManager:
             for k, d in self.db.group_by("name").items()
         }
 
-    def get_tree(self) -> TreeMapping:
-        """Get all current available hyperparameters and their values
-        as a tree mapping, this is useful for nested hyperparameters.
-
-        :return: a nested dict of name to value
-        :raises: ValueError
-        """
-
-        def _create_tree(db, keys: List[str], val):
-            if len(keys) == 0:
-                return val
-            key, *rest = keys
-            if key in db:
-                res = {key: _create_tree(db[key], rest, val)}
-            else:
-                res = {key: _create_tree({}, rest, val)}
-
-            db.update(res)
-            return db
-
+    @property
+    def _flat_tree(self):
         # Key syntax check
         # avoid impossible tree such as `dataset=5`, `dataset.aug=6`
         flatmap = self.get_values()
@@ -343,10 +330,45 @@ class HyperParameterManager:
                             key, test_key
                         )
                     )
+        return flatmap
+
+    def get_tree(self, prefix: str = "") -> TreeMapping:
+        """Get hyperparameter at a given prefix and their values
+        as a tree mapping.
+
+        :param prefix: the prefix of hp-tree to get. Specially, if it is empty str,
+            all hyperparameter will be returned.
+        :return: a nested dict of name to value
+        :raises: ValueError
+        """
+
+        def _create_tree(db, keys: List[str], val):
+            if len(keys) == 0:
+                return val
+            key, *rest = keys
+            if key in db:
+                res = {key: _create_tree(db[key], rest, val)}
+            else:
+                res = {key: _create_tree({}, rest, val)}
+
+            db.update(res)
+            return db
 
         result = {}  # type: Dict[str, TreeMapping]
-        for key, val in self.get_values().items():
+        for key, val in self._flat_tree.items():
+            # Notes:
+            #  - do not skip any key if prefix is empty
+            #  - skip if key does not match prefix
+            if prefix:
+                _prefix = prefix + "."
+                if not key.startswith(_prefix):
+                    continue
+                # remove prefix
+                plen = len(_prefix)
+                key = key[plen:]
+
             _create_tree(result, key.split("."), val)
+
         return result
 
     def set_value(self, name: str, value: Primitive) -> "HyperParameterManager":

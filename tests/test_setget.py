@@ -77,6 +77,8 @@ class TestSetGet(unittest.TestCase):
         self.hpm.set_tree(test_tree)
         for name, value in test_data.items():
             self.assertEqual(self.hpm.get_value(name), value)
+        self.assertDictEqual(self.hpm.get_tree("a"), test_tree["a"])
+        self.assertDictEqual(self.hpm.get_value("a.b"), test_tree["a"]["b"])
 
         with self.assertRaises(ValueError):
             self.hpm.set_tree({"a": 2})
@@ -97,6 +99,16 @@ class TestSetGet(unittest.TestCase):
         # ... but their original values are not
         for out in outs[1:]:
             self.assertNotEqual(out["values"], outs[0]["values"])
+
+    def test_dict_val_in_tree(self):
+        test_vals = {"a.b": 1, "c": {"d": 2}}
+        self.hpm.set_values(test_vals)
+        tree = self.hpm.get_tree()
+        hpm = hpman.HyperParameterManager("hp")
+
+        hpm.set_tree(tree)
+        self.assertEqual(hpm.get_value("c"), test_vals["c"])
+        self.assertEqual(hpm.get_value("c.d"), test_vals["c"]["d"])
 
     def test_double_set(self):
         double_set_data = [("a", 1), ("a", 2), ("b", 3.0), ("b", "str")]

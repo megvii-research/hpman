@@ -16,7 +16,8 @@ class NotLiteralEvaluable(Exception):
 
 # -- Sentinels
 class EmptyValue:
-    pass
+    def __bool__(self):
+        return False
 
 
 # -- Types
