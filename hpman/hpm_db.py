@@ -275,7 +275,7 @@ class HyperParameterDB(list):
                 occurrence["filename"], occurrence["lineno"]
             )
         else:
-            return source_helper.format_given_filename_ane_lineno(
+            return source_helper.format_given_filename_and_lineno(
                 occurrence["filename"], occurrence["lineno"]
             )
 
