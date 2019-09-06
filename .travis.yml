@@ -5,11 +5,6 @@ stages:
   - test
   - name: doc
     if: branch = master
-  - name: deploy
-    if: branch = master
-  - name: release
-    if: tag IS present
-
 
 jobs:
   include:
@@ -28,11 +23,5 @@ jobs:
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make test
     - stage: doc
-      script: skip
-      deploy: true
-    - stage: deploy
-      script: skip
-      deploy: true
-    - stage: release
-      script: skip
-      deploy: true
+      install: pip3 install -r requirements.txt -r requirements.dev.txt
+      script: make doc
