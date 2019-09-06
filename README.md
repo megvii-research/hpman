@@ -4,6 +4,8 @@
 
 # hpman (超参侠): The uncompromising hyperparameter manager.
 
+[![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman)
+
 **hpman** is a hyperparameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyperparameters anywhere, but manage them as a
