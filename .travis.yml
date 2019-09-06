@@ -14,8 +14,11 @@ jobs:
       script: make style-check
     - stage: test
       python: '3.6'
-      install: pip3 install -r requirements.txt -r requirements.dev.txt
+      install: 
+      - pip3 install -r requirements.txt -r requirements.dev.txt
+      - pip3 install codecov
       script: make test
+      after_success: codecov
     - stage: test
       python: '3.5'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
