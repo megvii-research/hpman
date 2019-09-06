@@ -1,5 +1,5 @@
 # XXX: since we need python3.5 compatibility, we drop the requirements of black
-# black
+black
 
 autoflake
 flake8
