@@ -6,6 +6,7 @@
 
 [![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman) 
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
+[![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
 
 **hpman** is a hyperparameter manager(HPM) library that truly make sense.
