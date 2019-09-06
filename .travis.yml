@@ -16,6 +16,7 @@ jobs:
       python: '3.6'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make test
+      after_success: codecov
     - stage: test
       python: '3.5'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
