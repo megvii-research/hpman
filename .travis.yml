@@ -1,4 +1,10 @@
 language: python
+matrix:
+  include:
+  - name: "3.5 Unit Test"
+    python: "3.5"
+  - name: "3.6 Unit Tests"
+    python: "3.6"
 install: pip3 install -r requirements.txt -r requirements.dev.txt
 script: 
 - make style-check
