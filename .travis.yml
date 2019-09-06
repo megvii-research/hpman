@@ -3,8 +3,6 @@ language: python
 stages:
   - style-check
   - test
-  - name: doc
-    if: branch = master
 
 jobs:
   include:
@@ -22,6 +20,7 @@ jobs:
       python: '3.5'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make test
-    - stage: doc
+    - stage: test
+      name: docs
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make doc
