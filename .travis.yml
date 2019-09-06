@@ -3,6 +3,12 @@ python:
   - '3.6'
   - '3.5'
 install: pip3 install -r requirements.txt -r requirements.dev.txt
-script: 
-- make style-check
-- make test
+
+jobs:
+  include:
+    - stage: style-check
+      script: pip3 install black & make style-check
+    - stage: test
+      script: make test
+#     - stage: deploy
+#       script: ./deploy
