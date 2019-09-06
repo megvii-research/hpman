@@ -1,14 +1,26 @@
 language: python
 
+stages:
+  - style-check
+  - test
+  - name: deploy
+    if: branch = master
+
+
 jobs:
   include:
     - stage: style-check
       python: '3.6'
-      install: pip3 install -r requirements.txt -r requirements.dev.txt
-      script: pip3 install black & make style-check
+      install: 
+        - pip3 install -r requirements.txt -r requirements.dev.txt
+        - pip3 install black
+      script: make style-check
     - stage: test
       python:
         - '3.5'
         - '3.6'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make test
+    - stage: deploy
+      script: skip
+      deploy: true
