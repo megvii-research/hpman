@@ -255,29 +255,16 @@ class HyperParameterDB(list):
                 return i
         return None
 
-    # TODO: XXX: passing source_helper around is ugly
     @classmethod
-    def format_occurrence(
-        cls, occurrence: HyperParameterOccurrence, *, source_helper=None, **kwargs
-    ) -> str:
+    def format_occurrence(cls, occurrence: HyperParameterOccurrence, **kwargs) -> str:
         """Format a single occurrence.
 
         :param occurrence: the occurrence to be formated
-        :param source_helper: SourceHelper to be used. If None is given, a
-            new SourceHelper will be constructed using information provided in
-            occurrence (which involves reading the whole file). If a SourceHelper
-            object is given, we will use the given SourceHelper (which will not
-            read the file again)
         """
         assert occurrence is not None
-        if source_helper is None:
-            return SourceHelper.format_given_filepath_and_lineno(
-                occurrence["filename"], occurrence["lineno"]
-            )
-        else:
-            return source_helper.format_given_filename_ane_lineno(
-                occurrence["filename"], occurrence["lineno"]
-            )
+        return occurrence["source_helper"].format_given_filename_and_lineno(
+            occurrence["filename"], occurrence["lineno"]
+        )
 
     def _do_push_occurrence(self, occurrence):
         occurrence["index"] = self.index_count
@@ -289,7 +276,7 @@ class HyperParameterDB(list):
         occurrence["index"] = s["index"]
         self[idx] = occurrence
 
-    def _check_source_code_double_assigment(self, occurrence, *, source_helper=None):
+    def _check_source_code_double_assigment(self, occurrence):
         s = self.select(
             lambda row: (
                 row.name == occurrence.name
@@ -305,10 +292,8 @@ class HyperParameterDB(list):
                 "Second occurrence:\n"
                 "{}\n"
             ).format(
-                s.format_occurrence(
-                    s.find_first(L.has_default_value), source_helper=source_helper
-                ),
-                s.format_occurrence(occurrence, source_helper=source_helper),
+                s.format_occurrence(s.find_first(L.has_default_value)),
+                s.format_occurrence(occurrence),
             )
             raise DoubleAssignmentException(error_msg)
 
@@ -329,9 +314,9 @@ class HyperParameterDB(list):
 
         if set_from_src:  # multiple occurrence is permitted
             if occurrence.has_default_value:
-                self._check_source_code_double_assigment(
-                    occurrence, source_helper=source_helper
-                )
+                if source_helper is not None:
+                    occurrence["source_helper"] = source_helper
+                self._check_source_code_double_assigment(occurrence)
             self._do_push_occurrence(occurrence)
         else:  # only one occurrence is permitted
             s = self.select(

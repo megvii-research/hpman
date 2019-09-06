@@ -161,8 +161,17 @@ class TestParseSource(unittest.TestCase):
         )
 
         self.hpm.parse_source("_('hp2', 1)")
-        self.assertRaises(
-            hpman.DoubleAssignmentException, self.hpm.parse_source, "_('hp2', 2)"
+        self.assertRaisesRegex(
+            hpman.DoubleAssignmentException,
+            "Duplicated default values:\n"
+            "First occurrence:\n"
+            "<unknown>:1\n"
+            "==> 1: _\\('hp2', 1\\)\n"
+            "Second occurrence:\n"
+            "<unknown>:1\n"
+            "==> 1: _\\('hp2', 2\\)\n",
+            self.hpm.parse_source,
+            "_('hp2', 2)",
         )
 
     def test_parse_underscore_without_value(self):
