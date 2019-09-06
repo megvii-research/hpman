@@ -1,3 +1,5 @@
 language: python
 install: pip3 install -r requirements.txt -r requirements.dev.txt
-script: true
+script: 
+- make style-check
+- make test
