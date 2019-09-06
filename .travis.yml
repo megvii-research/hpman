@@ -1,8 +1,5 @@
 language: python
-python:
-  - '3.5'
-  - '3.6'
-  
+
 stages:
   - style-check
   - test
@@ -19,6 +16,11 @@ jobs:
         - pip3 install black
       script: make style-check
     - stage: test
+      python: '3.6'
+      install: pip3 install -r requirements.txt -r requirements.dev.txt
+      script: make test
+    - stage: test
+      python: '3.5'
       install: pip3 install -r requirements.txt -r requirements.dev.txt
       script: make test
     - stage: deploy
