@@ -121,7 +121,7 @@ class HyperParameterDB(list):
             HyperParameterDB
         )  # type: typing.DefaultDict[str, HyperParameterDB]
         for i in self:
-            print('[debug]', i, column)
+            print("[debug]", i, column)
             groups[i[column]].append(i)
         return groups
 
@@ -318,7 +318,8 @@ class HyperParameterDB(list):
         else:  # only one occurrence is permitted
             s = self.select(
                 lambda row: (
-                    row["name"] == occurrence["name"] and row["priority"] == occurrence["priority"]
+                    row["name"] == occurrence["name"]
+                    and row["priority"] == occurrence["priority"]
                 )
             )
             if s.empty():
