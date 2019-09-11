@@ -4,8 +4,6 @@ import functools
 import typing
 from typing import Callable, Dict, List, Optional, Union
 
-from attrdict import AttrDict  # type: ignore
-
 from .primitives import DoubleAssignmentException, EmptyValue
 from .source_helper import SourceHelper
 
@@ -19,7 +17,7 @@ class HyperParameterPriority(enum.IntEnum):
 P = HyperParameterPriority
 
 
-class HyperParameterOccurrence(AttrDict):
+class HyperParameterOccurrence(dict):
     """A single occurrence of a statically pasred hyperparameter. Subclasses
     dict.
     """
@@ -84,14 +82,12 @@ class HyperParameterOccurrence(AttrDict):
 
         for name in self.__defaults:
             if hasattr(self, name):
-                # XXX: remove user defined attributes as AttrDict does not works
-                # with them
                 delattr(type(self), name)
         super().__init__(*args, **d)
 
     @property
     def has_default_value(self):
-        return not isinstance(self.value, EmptyValue)
+        return not isinstance(self["value"], EmptyValue)
 
 
 class HyperParameterDB(list):
@@ -125,7 +121,8 @@ class HyperParameterDB(list):
             HyperParameterDB
         )  # type: typing.DefaultDict[str, HyperParameterDB]
         for i in self:
-            groups[getattr(i, column)].append(i)
+            print('[debug]', i, column)
+            groups[i[column]].append(i)
         return groups
 
     def indexing(self, idx: Union[int, List[int]]):
@@ -279,8 +276,8 @@ class HyperParameterDB(list):
     def _check_source_code_double_assigment(self, occurrence):
         s = self.select(
             lambda row: (
-                row.name == occurrence.name
-                and row.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE
+                row["name"] == occurrence["name"]
+                and row["priority"] == P.PRIORITY_PARSED_FROM_SOURCE_CODE
             )
         )
 
@@ -310,7 +307,7 @@ class HyperParameterDB(list):
             type(occurrence),
             occurrence,
         )
-        set_from_src = occurrence.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE
+        set_from_src = occurrence["priority"] == P.PRIORITY_PARSED_FROM_SOURCE_CODE
 
         if set_from_src:  # multiple occurrence is permitted
             if occurrence.has_default_value:
@@ -321,7 +318,7 @@ class HyperParameterDB(list):
         else:  # only one occurrence is permitted
             s = self.select(
                 lambda row: (
-                    row.name == occurrence.name and row.priority == occurrence.priority
+                    row["name"] == occurrence["name"] and row["priority"] == occurrence["priority"]
                 )
             )
             if s.empty():
@@ -336,7 +333,7 @@ class HyperParameterDBLambdas:
     # sort first by priority, then by value non-emptiness
     @staticmethod
     def value_priority(row: HyperParameterOccurrence):
-        return -(row.priority * 10 - isinstance(row.value, EmptyValue))
+        return -(row["priority"] * 10 - isinstance(row["value"], EmptyValue))
 
     @staticmethod
     def order_by(column: str):
@@ -345,7 +342,7 @@ class HyperParameterDBLambdas:
     # -- select lambdas
     @staticmethod
     def has_default_value(row):
-        return not isinstance(row.value, EmptyValue)
+        return not isinstance(row["value"], EmptyValue)
 
     @staticmethod
     def exist_attr(attr):
@@ -353,31 +350,31 @@ class HyperParameterDBLambdas:
 
     @staticmethod
     def of_name(name):
-        return lambda row: row.name == name
+        return lambda row: row["name"] == name
 
     @staticmethod
     def of_name_prefix(prefix):
-        return lambda row: row.name.startswith(prefix)
+        return lambda row: row["name"].startswith(prefix)
 
     @staticmethod
     def of_name_suffix(suffix):
-        return lambda row: row.name.endswith(suffix)
+        return lambda row: row["name"].endswith(suffix)
 
     @staticmethod
     def of_value(value):
-        return lambda row: row.value == value
+        return lambda row: row["value"] == value
 
     @staticmethod
     def of_priority(priority):
-        return lambda row: row.priority == priority
+        return lambda row: row["priority"] == priority
 
     @staticmethod
     def apply_column(column, func):
         @functools.wraps(func)
         def wrapper(row):
-            old_value = getattr(row, column)
+            old_value = row[column]
             new_value = func(old_value)
-            setattr(row, column, new_value)
+            row[column] = new_value
 
         return wrapper
 

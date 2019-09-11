@@ -58,8 +58,8 @@ class TestHPMDB(unittest.TestCase):
 
     def test_indexing(self):
         db = self.db
-        self.assertEqual(db.indexing(0).name, "v10")
-        self.assertEqual(db.indexing(-1).name, "v32")
+        self.assertEqual(db.indexing(0)["name"], "v10")
+        self.assertEqual(db.indexing(-1)["name"], "v32")
         self.assertEqual(len(db.indexing([1, 2, 3])), 3)
         self.assertRaises(IndexError, db.indexing, "a")
 
@@ -103,12 +103,12 @@ class TestHPMDB(unittest.TestCase):
         d = db.select(L.has_default_value)
         self.assertEqual(
             sum(d.extract_column("value")),
-            d.reduce(lambda a, b: a + b.value, initial=0),
+            d.reduce(lambda a, b: a + b["value"], initial=0),
         )
 
         # with intial value and no entries in db
         self.assertEqual(
-            123, HyperParameterDB().reduce(lambda a, b: a + b.value, initial=123)
+            123, HyperParameterDB().reduce(lambda a, b: a + b["value"], initial=123)
         )
 
         # without initial value and
@@ -125,11 +125,11 @@ class TestHPMDB(unittest.TestCase):
 
         # all
         self.assertFalse(db.all(L.has_default_value))
-        self.assertTrue(db.all(lambda row: len(row.name) == 3))
+        self.assertTrue(db.all(lambda row: len(row["name"]) == 3))
 
         # any
         self.assertTrue(db.any(L.has_default_value))
-        self.assertFalse(db.all(lambda row: len(row.name) == 2))
+        self.assertFalse(db.all(lambda row: len(row["name"]) == 2))
 
         # find_first
         self.assertEqual(db.find_first(L.of_value(2))["name"], "v12")

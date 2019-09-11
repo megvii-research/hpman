@@ -265,7 +265,7 @@ class HyperParameterManager:
             exception. In this case, the missing value will be an instance
             of :class:`.primitives.EmptyValue`
         """
-        v = self.db.select(lambda row: row.name == name).sorted(L.value_priority)
+        v = self.db.select(lambda row: row["name"] == name).sorted(L.value_priority)
         if len(v) == 0:
             value = EmptyValue()
         else:
