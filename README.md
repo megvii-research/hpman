@@ -519,17 +519,22 @@ The example can be found at [examples/02-hints](examples/02-hints)
 pip install -r requirements.dev.txt
 ```
 
-2. Install pre-commit hook
+2. Activate git commit template
+```
+git config commit.template .git-commit-template.txt
+```
+
+3. Install pre-commit hook
 ```bash
 pre-commit install
 ```
 
-3. To format your source code
+4. To format your source code
 ```base
 make format
 ```
 
-3. To check the coding style
+5. To check the coding style
 ```base
 make style-check
 ```
