@@ -1,22 +1,32 @@
 repos:
--   repo: https://github.com/python/black
-    rev: stable
-    hooks:
-    - id: black
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
-    hooks:
-    -   id: flake8
-        args: ["--ignore=E501,E203,F401,W503,W504"]
-    -   id: trailing-whitespace
-    -   id: requirements-txt-fixer
-    -   id: check-added-large-files
-    -   id: check-docstring-first
-    -   id: check-executables-have-shebangs
-    -   id: check-merge-conflict
-    -   id: debug-statements
-    -   id: end-of-file-fixer
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.720'
-    hooks:
-    -   id: mypy
+- repo: https://github.com/python/black
+  rev: stable
+  hooks:
+  - id: black
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  - id: flake8
+    args: ["--ignore=E501,E203,F401,W503,W504"]
+  - id: trailing-whitespace
+  - id: requirements-txt-fixer
+  - id: check-added-large-files
+  - id: check-docstring-first
+  - id: check-executables-have-shebangs
+  - id: check-merge-conflict
+  - id: debug-statements
+  - id: end-of-file-fixer
+- repo: local
+  hooks:
+  - id: style-check
+    name: Check code style
+    entry: black --diff --check hpman examples tests
+    language: system
+    pass_filenames: false
+    types: [python]
+  - id: mypy
+    name: Static type checking
+    entry: mypy hpman
+    language: system
+    pass_filenames: false
+    types: [python]
