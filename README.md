@@ -4,7 +4,7 @@
 
 # hpman (超参侠): The uncompromising hyperparameter manager.
 
-[![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman) 
+[![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman)
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
 [![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
@@ -513,28 +513,50 @@ hints_example.py: error: argument --optimizer: invalid choice: 'rmsprop' (choose
 
 The example can be found at [examples/02-hints](examples/02-hints)
 
-# Development
-1. Install requirements:
+
+## Nested Hyperparameters
+
+It is quite common to have a nested config file for being more readable.
+
+For example, the author have a yaml config like this：
+
+```yaml
+discriminator:
+  in_channels: 3
+  spectral: true
+  norm: 'instance'
+  activation: 'leaky_relu'
+  residual: true
+  input_size: [512, 512]
+```
+
+你可以分别设置带层次结构的超参数。并分组管理这些超参数。如将与dataset有关的参数使用相同的前缀。
+
+```python
+from hpman.m import _
+
+_('a.b', 1)
+_('a.c', 2)
+_('a.d.e', 3)
+_('a.d.f', 4)
+
+print(_('a'))   # {'b': 1, 'c': 2, 'd': {'e': 3, 'f': 4}}
+```
+
+**Notice:** 一个key不能同时指向一棵树和一个值，你可以通过set_value和set_tree分别指明超参数的类型是value还是tree。当你通过下划线函数定义默认值时，会被视为是value。
+所以如下代码
+```python
+_('a', {'b': 1})    # 被视为name='a'的超参数，默认值为{'b': 1}。此时a是value。
+_('a.b')            # 被视为超参树a中的b，此时a是tree。
+```
+在运行时会抛出异常：
 ```bash
-pip install -r requirements.dev.txt
+KeyError: '`a.b` not found'
 ```
-
-2. Activate git commit template
-```
-git config commit.template .git-commit-template.txt
-```
-
-3. Install pre-commit hook
+在静态解析时会抛出异常：
 ```bash
-pre-commit install
+hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
 ```
 
-4. To format your source code
-```base
-make format
-```
-
-5. To check the coding style
-```base
-make style-check
-```
+**缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
+因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
