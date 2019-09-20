@@ -8,7 +8,6 @@
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
 [![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
-
 **hpman** is a hyperparameter manager(HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyperparameters anywhere, but manage them as a
@@ -19,99 +18,40 @@ command line interface, IDE integration, experiment management system, etc.
 
 hpman supports Python version greater equal than 3.5.
 
+- [hpman (超参侠): The uncompromising hyperparameter manager.](#hpman-%e8%b6%85%e5%8f%82%e4%be%a0-the-uncompromising-hyperparameter-manager)
+- [Story / Background](#story--background)
+  - [Centralized HPM](#centralized-hpm)
+  - [However ...](#however)
+  - [Distributed HPM](#distributed-hpm)
+  - [Distributed-Centralized HPM](#distributed-centralized-hpm)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Features](#features)
+  - [Design principles](#design-principles)
+  - [Aribitrary Imports](#aribitrary-imports)
+  - [Define Hyperparameters](#define-hyperparameters)
+  - [Static Parsing](#static-parsing)
+  - [Runtime Value Getter/Setter](#runtime-value-gettersetter)
+  - [Hints](#hints)
+  - [Nested Hyperparameters](#nested-hyperparameters)
+- [Contributing](#contributing)
+- [License](#license)
 
-# Installation
-```bash
-pip install hpman
-```
+# Story / Background
 
-# Example
-
-`lib.py`:
-```python
-# File: lib.py
-from hpman.m import _
-
-
-def add():
-    return _("a", 0) + _("b", 0)
-
-
-def mult():
-    return _("a") * _("b")
-```
-
-`main.py`:
-```python
-#!/usr/bin/env python3
-import os
-import argparse
-
-from hpman.m import _
-
-import lib
-
-
-def main():
-    basedir = os.path.dirname(os.path.realpath(__file__))
-    _.parse_file(basedir)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", default=_.get_value("a"), type=int)
-    parser.add_argument("-b", default=_.get_value("b"), type=int)
-    args = parser.parse_args()
-
-    _.set_value("a", args.a)
-    _.set_value("b", args.b)
-
-    print("a = {}".format(_.get_value("a")))
-    print("b = {}".format(_.get_value("b")))
-    print("lib.add() = {}".format(lib.add()))
-    print("lib.mult() = {}".format(lib.mult()))
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Results:
-```bash
-$ ./main.py
-a = 0
-b = 0
-lib.add() = 0
-lib.mult() = 0
-
-$ ./main.py -a 2 -b 3
-a = 2
-b = 3
-lib.add() = 5
-lib.mult() = 6
-```
-
-This is the core library designed for data manipulation. You may want use
-a better front-end:
-- [CLI examples](TODO:link-to-hpargparse)
-- [Jupyter examples](TODO:link-to-hpjupyter)
-- [VSCode Extension](TODO:link-to-hpcode)
-
-
-# Installation
-```
-pip install hpman
-```
-
-# Story
 Managing ever-changing hyperparameters is a pain in the a\*\*.
 From the practice of performing enormous amount of deep learning experiments,
 we found two existing hyperparameter managing patterns of the utmost
 prevalence.
 
 ## Centralized HPM
+
 We call the first type "**centralized HPM**". It follows the way of
 configuration management in traditional software, regardless of using a python
 file or json or yaml or whatever that can store some key-value mapping (may
 remind you of `settings.ini`, `nginx.conf`, `config.yaml` etc.):
+
 ```python
 # File: config.py
 BATCH_SIZE = 256
@@ -133,25 +73,27 @@ import config
 
 def build_model():
     return nn.Sequence(
-	[
-	    nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
-			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-			nn.ReLU())
-	] + [
-	    nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
-			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-			nn.ReLU())
-	    for i in range(config.NUM_LAYERS - 1)
-	] + [
-	    nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS)
-	]
+    [
+        nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
+            nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+            nn.ReLU())
+    ] + [
+        nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
+            nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+            nn.ReLU())
+        for i in range(config.NUM_LAYERS - 1)
+    ] + [
+        nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS)
+    ]
     )
 ```
+
 This way of manaing hyperparameters is widely seen in machine learning
 libraries, e.g., xgboost, whose hyperparameters are fairly stable compare than
 that in deep learning research.
 
 ## However ...
+
 However, it is quite common for researchers to add some hyperparameters at
 their inspiration (e.g., suddenly come up with a "Temperature" parameter in
 softmax.). They found pleasure in tweaking the hyperparameters, but quickly
@@ -159,6 +101,7 @@ abandon it if the experiment goes wrong.  These acts are called [Non-Recurring
 Engineering (NRE)](https://en.wikipedia.org/wiki/Non-recurring_engineering).
 
 In these cases, the "centralized HPM" reveals obvious drawbacks:
+
 1. Whenever you need to introduce a new hyperparameter, you must kind of
    "declare" it in the configuration file, while using it in some
    deeply-nested easy-to-forget files.
@@ -176,8 +119,8 @@ These drawbacks essentially requires the user to maintain a distributed data
 structure, which not only induces great mental burden doing experiments,
 but also be error-prone to bugs.
 
-
 ## Distributed HPM
+
 So researchers come to another solution: forget about config files; define and
 use whatever hyperparameters whenever you need, anywhere in the project. We
 call this "Distributed HPM".  However, this is hardly called "management"; it
@@ -192,18 +135,18 @@ from torch import nn
 def build_model():
     hidden_channels = 128  # <-- hyperparameter
     return nn.Sequence(
-	[
-	    nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyperparameter
-			nn.BatchNorm1d(hidden_channels),
-			nn.ReLU())
-	] + [
-	    nn.Sequence(nn.Linear(hidden_channels, hidden_channels),
-			nn.BatchNorm1d(hidden_channels),
-			nn.ReLU())
-	    for i in range(4)  # <-- hyperparameter
-	] + [
-	    nn.Linear(hidden_channels, 10)  # <-- hyperparameter
-	]
+    [
+        nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyperparameter
+            nn.BatchNorm1d(hidden_channels),
+            nn.ReLU())
+    ] + [
+        nn.Sequence(nn.Linear(hidden_channels, hidden_channels),
+            nn.BatchNorm1d(hidden_channels),
+            nn.ReLU())
+        for i in range(4)  # <-- hyperparameter
+    ] + [
+        nn.Linear(hidden_channels, 10)  # <-- hyperparameter
+    ]
     )
 ```
 
@@ -213,12 +156,12 @@ communication, reproduction, and engineering. Nobody knows what happened, when
 did it happen, and nobody knows how to know easily. You know nothing, unless
 you read and diff through all the source codes.
 
-> You know nothing, John Snow.
+> You know nothing, Jon Snow.
 >
 > 咱也不知道，咱也不敢问呀
 
-
 ## Distributed-Centralized HPM
+
 Now we have two ways of managing hyperparameters: one is good for engineering
 but inconvenient for researchers, another one is convenient for researchers,
 but bad for engineering.
@@ -261,6 +204,7 @@ if __name__ == "__main__":
 ```
 
 and you can:
+
 ```bash
 $ ./main.py
 weight decay is 1e-05
@@ -328,7 +272,98 @@ Also, expression evaluation in hpman is quite safe as we are using
 `ast.literal_eval`.
 
 
+# Installation
+
+```bash
+pip install hpman
+```
+
+# Usage
+
+# Examples
+
+`lib.py`:
+
+```python
+# File: lib.py
+from hpman.m import _
+
+
+def add():
+    return _("a", 0) + _("b", 0)
+
+
+def mult():
+    return _("a") * _("b")
+```
+
+`main.py`:
+
+```python
+#!/usr/bin/env python3
+import os
+import argparse
+
+from hpman.m import _
+
+import lib
+
+
+def main():
+    basedir = os.path.dirname(os.path.realpath(__file__))
+    _.parse_file(basedir)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", default=_.get_value("a"), type=int)
+    parser.add_argument("-b", default=_.get_value("b"), type=int)
+    args = parser.parse_args()
+
+    _.set_value("a", args.a)
+    _.set_value("b", args.b)
+
+    print("a = {}".format(_.get_value("a")))
+    print("b = {}".format(_.get_value("b")))
+    print("lib.add() = {}".format(lib.add()))
+    print("lib.mult() = {}".format(lib.mult()))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Results:
+
+```bash
+$ ./main.py
+a = 0
+b = 0
+lib.add() = 0
+lib.mult() = 0
+
+$ ./main.py -a 2 -b 3
+a = 2
+b = 3
+lib.add() = 5
+lib.mult() = 6
+```
+
+This is the core library designed for data manipulation. You may want use
+a better front-end:
+
+- [CLI examples](TODO:link-to-hpargparse)
+- [Jupyter examples](TODO:link-to-hpjupyter)
+- [VSCode Extension](TODO:link-to-hpcode)
+
 # Features
+
+## Design principles
+
+1. Low runtime overhead.
+
+2. Values of hyperparameter can be any type. 
+
+3. 
+
 ## Aribitrary Imports
 The hyperparameter managers are the most important objects of hpman.  We are
 using `from hpman.m import _` throughout the tutorial, as well as recommending
@@ -560,3 +595,7 @@ hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
 
 **缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
 因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
+
+# Contributing
+
+# License
