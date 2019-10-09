@@ -8,7 +8,7 @@
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
 [![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
-**hpman** is a hyperparameter manager(HPM) library that truly make sense.
+**hpman** is a hyperparameter manager (HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyperparameters anywhere, but manage them as a
 whole.
@@ -35,6 +35,7 @@ hpman supports Python version greater equal than 3.5.
   - [Runtime Value Getter/Setter](#runtime-value-gettersetter)
   - [Hints](#hints)
   - [Nested Hyperparameters](#nested-hyperparameters)
+  - [Nested Hyperparameters 2](#nested-hyperparameters-2)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -280,6 +281,8 @@ pip install hpman
 
 # Usage
 
+
+
 # Examples
 
 `lib.py`:
@@ -361,8 +364,6 @@ a better front-end:
 1. Low runtime overhead.
 
 2. Values of hyperparameter can be any type. 
-
-3. 
 
 ## Aribitrary Imports
 The hyperparameter managers are the most important objects of hpman.  We are
@@ -596,6 +597,46 @@ hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
 **缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
 因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
 
+
+## Nested Hyperparameters 2
+
+当超参数数量增多时，会带来管理压力。
+
+我们经常将超参数分为若干族，使用相同的前缀方便管理。
+
+
+你可以批量操作同一族的超参数。如将超参数导出成如下结构的yaml，提高了可读性。也可以直接导入树状结构的yaml。
+
+```yaml
+discriminator:
+  in_channels: 3
+  spectral: true
+  norm: 'instance'
+  activation: 'leaky_relu'
+  residual: true
+  input_size: [512, 512]
+```
+
+**Notice:** 一个key不能同时指向一棵树和一个值，你可以通过set_value和set_tree分别指明超参数的类型是value还是tree。当你通过下划线函数定义默认值时，会被视为是value。
+所以如下代码
+```python
+_('a', {'b': 1})    # 被视为name='a'的超参数，默认值为{'b': 1}。此时a是value。
+_('a.b')            # 被视为超参树a中的b，此时a是tree。
+```
+在运行时会抛出异常：
+```bash
+KeyError: '`a.b` not found'
+```
+在静态解析时会抛出异常：
+```bash
+hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
+```
+
+**缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
+因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
+
 # Contributing
 
 # License
+
+[MIT](LICENSE) © MEGVII Research
