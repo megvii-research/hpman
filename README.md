@@ -8,6 +8,8 @@
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
 [![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
+English | [简体中文](./README_CN.md)
+
 **hpman** is a hyperparameter manager (HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
 experiment. You can define hyperparameters anywhere, but manage them as a
@@ -88,7 +90,7 @@ def build_model():
     )
 ```
 
-This way of manaing hyperparameters is widely seen in machine learning
+This way of managing hyperparameters is widely seen in machine learning
 libraries, e.g., xgboost, whose hyperparameters are fairly stable compare than
 that in deep learning research.
 
@@ -550,10 +552,7 @@ The example can be found at [examples/02-hints](examples/02-hints)
 
 ## Nested Hyperparameters
 
-当超参数数量增多时，会带来管理压力。
-
-我们经常将超参数分为若干族，使用相同的前缀方便管理。
-
+当超参数数量增多时，会带来管理压力。我们经常将超参数分为若干族，使用相同的前缀方便管理。
 
 你可以批量操作同一族的超参数。如将超参数导出成如下结构的yaml，提高了可读性。也可以直接导入树状结构的yaml。
 
@@ -586,6 +585,8 @@ hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
 因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
 
 # Contributing
+
+
 
 # License
 
