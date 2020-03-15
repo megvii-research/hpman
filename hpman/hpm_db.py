@@ -55,8 +55,8 @@ class HyperParameterOccurrence(AttrDict):
     only present in parsed hyperparameters """
 
     # XXX: In python 3.6, we would use `attr_dict_bind` library to implement
-    #     attribute dict binding mechanism with user defined attributs
-    #     straighforward.
+    #     attribute dict binding mechanism with user defined attributes
+    #     straighforwardly.
     #     However, to accommodate python 3.5, we implement the same function
     #     using `attrdict` along with the following ugly hacks.
     __defaults = {
