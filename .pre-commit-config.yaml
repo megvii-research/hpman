@@ -16,6 +16,11 @@ repos:
   - id: check-merge-conflict
   - id: debug-statements
   - id: end-of-file-fixer
+- repo: https://github.com/yunojuno/pre-commit-xenon
+  rev: cc59b0431a5d072786b59430e9b342b2881064f6
+  hooks:
+  - id: xenon
+    args: ["--max-average=A", "--max-modules=C", "--max-absolute=C"]
 - repo: local
   hooks:
   - id: style-check
