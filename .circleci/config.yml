@@ -8,7 +8,7 @@ jobs:
         steps:
             - checkout
             - python/load-cache
-            - python/install-deps
+            - run: pip install --user -r requirements.txt -r requirements.dev.txt
             - python/save-cache
             - run: make test
             - store_test_results:
