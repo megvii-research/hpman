@@ -17,6 +17,8 @@ jobs:
                 path: test-results
                 destiation: tr1
 workflows:
+    version: 2
+
     main:
         jobs:
             - build
