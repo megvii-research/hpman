@@ -1,7 +1,7 @@
 all:
 
 test:
-	pytest \
+	python3 -m pytest \
 	    --cov=hpman \
 	    --no-cov-on-fail \
 	    --cov-report=html:htmlcov \
