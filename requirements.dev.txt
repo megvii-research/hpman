@@ -1,7 +1,7 @@
-# XXX: since we need python3.5 compatibility, we drop the requirements of black
-# black
 
 autoflake
+# XXX: since we need python3.5 compatibility, we drop the requirements of black
+black
 flake8
 isort
 m2r
