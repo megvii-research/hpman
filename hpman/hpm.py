@@ -53,7 +53,7 @@ class HyperParameterManager:
     """Hyperparameter database. ANYTHING you want is here.
     """
 
-    def __init__(self, placeholder: str):
+    def __init__(self, placeholder: str) -> None:
         """Create a hyperparameter manager.
 
         :param placeholder: placeholder name of this HyperParameterManager

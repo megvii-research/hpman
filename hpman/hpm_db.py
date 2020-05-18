@@ -1,8 +1,8 @@
 import collections
 import enum
 import functools
-import typing
-from typing import Callable, Dict, List, Optional, Union
+import ast
+from typing import Callable, Dict, List, Optional, Union, DefaultDict, Any
 
 from attrdict import AttrDict  # type: ignore
 
@@ -24,10 +24,10 @@ class HyperParameterOccurrence(AttrDict):
     dict.
     """
 
-    name = None
+    name = None  # type: str
     """Name of the hyperparameter"""
 
-    value = EmptyValue()
+    value = EmptyValue()  # type: Any
     """Value of the hyperparameter. An instance of :class:`.primitives.EmptyValue`
     should present if value is not set."""
 
@@ -38,19 +38,19 @@ class HyperParameterOccurrence(AttrDict):
     for details about the meaning of each priority.
     """
 
-    filename = None
+    filename = None  # type: str
     """Filename in which this hyperparameter occurs. Will only present in
     parsed hyperparameters"""
 
-    lineno = None
+    lineno = None  # type: int
     """In which line of the file this hyperparameter occurs. Will only present
     in parsed hyperparameters """
 
-    ast_node = None
+    ast_node = None  # type: ast.AST
     """The parsed `ast.AST` object of this occurrence. Will only present
     in parsed hyperparameters"""
 
-    hints = None
+    hints = None  # type: Dict[str, Any]
     """Hints provided by user of this occurrence of the hyperparameter.  Will
     only present in parsed hyperparameters """
 
@@ -105,7 +105,7 @@ class HyperParameterDB(list):
         entry.
     """
 
-    index_count = None
+    index_count = None  # type: int
     """Auto increment counter"""
 
     def __init__(self, *args, **kwargs):
@@ -123,7 +123,7 @@ class HyperParameterDB(list):
         """
         groups = collections.defaultdict(
             HyperParameterDB
-        )  # type: typing.DefaultDict[str, HyperParameterDB]
+        )  # type: DefaultDict[str, HyperParameterDB]
         for i in self:
             groups[getattr(i, column)].append(i)
         return groups
