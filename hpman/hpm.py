@@ -36,7 +36,7 @@ class HyperParameterManager:
     two phases: parsing-time and runtime. In parsing-time, source code are
     parsed to (A) set of user-defined hyperparameters with default values;
     while in runtime, user can (B) set/get defaults calling
-    HyperParameterManager object, and (C) set values with indention using
+    HyperParameterManager object, and (C) set values indentionally using
     methods. A HyperParameterManager object is usually created as some
     light-weight names, such as underscore "_". This is called a placeholder,
     and is vital to the parsing of source code. Hyperparameter values set
@@ -195,7 +195,7 @@ class HyperParameterManager:
                         "hp-name should be literal-string: L{}".format(node.lineno)
                     )
 
-                # Literal evaluate the hyperparameter naem
+                # Literal evaluate the hyperparameter name
                 name = ast.literal_eval(node.args[0])
                 lineno = node.lineno
 
