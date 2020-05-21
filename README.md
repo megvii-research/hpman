@@ -4,7 +4,7 @@
 
 # hpman (超参侠): The uncompromising hyperparameter manager.
 
-[![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman)
+[![CircleCI](https://img.shields.io/circleci/build/github/megvii-research/hpman/circleci-project-setup?token=ed5f797ce0fa7a23f1930864879557ec5a1e82d4)](https://app.circleci.com/pipelines/github/megvii-research/hpman)
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
 [![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
@@ -132,20 +132,16 @@ from torch import nn
 import config
 
 def build_model():
-    return nn.Sequence(
-	[
-	    nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
-			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-			nn.ReLU())
-	] + [
-	    nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
-			nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-			nn.ReLU())
-	    for i in range(config.NUM_LAYERS - 1)
-	] + [
-	    nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS)
-	]
-    )
+    model = nn.Sequential()
+    model.add_module('stem',nn.Sequential(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
+                        nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+                        nn.ReLU()))
+    for i in range(config.NUM_LAYERS - 1):
+        model.add_module(f'layer{i}', nn.Sequential(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
+                      nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+                      nn.ReLU()))
+    model.add_module('fc', nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS))
+    return model
 ```
 This way of manaing hyperparameters is widely seen in machine learning
 libraries, e.g., xgboost, whose hyperparameters are fairly stable compare than
@@ -190,21 +186,17 @@ hyperparameter cheap: let yourself free and do whatever you want.
 from torch import nn
 
 def build_model():
-    hidden_channels = 128  # <-- hyperparameter
-    return nn.Sequence(
-	[
-	    nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyperparameter
+	hidden_channels = 128  # <-- hyperparameter
+	model=nn.Sequential()
+	model.add_module('stem',nn.Sequential(nn.Linear(784, hidden_channels), # <-- hyperparameter
 			nn.BatchNorm1d(hidden_channels),
-			nn.ReLU())
-	] + [
-	    nn.Sequence(nn.Linear(hidden_channels, hidden_channels),
+			nn.ReLU()))
+	for i in range(4):
+		model.add_module(f'layer{i}', nn.Sequential(nn.Linear(hidden_channels, hidden_channels),
 			nn.BatchNorm1d(hidden_channels),
-			nn.ReLU())
-	    for i in range(4)  # <-- hyperparameter
-	] + [
-	    nn.Linear(hidden_channels, 10)  # <-- hyperparameter
-	]
-    )
+			nn.ReLU()))
+	model.add_module('fc',nn.Linear(hidden_channels, 10))  # <-- hyperparameter
+	return model
 ```
 
 However, barbaric growth of hyperparameters of different names in different
@@ -390,7 +382,7 @@ def training_loop():
     batch_size = _('batch_size', 128)
 
     # first use of `num_layer` is recommend to come with default value
-    print('num_layers = {}'.format(_('num__layers', 50)))
+    print('num_layers = {}'.format(_('num_layers', 50)))
 
     # use it directly without storing the values
     if _('use_resnet', True):

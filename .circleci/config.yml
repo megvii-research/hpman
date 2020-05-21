@@ -4,19 +4,21 @@ orbs:
 jobs:
     build:
         docker:
-            -image: circleci/python:3.6.7-jessie
+            - image: circleci/python:3.6.7-jessie
         steps:
             - checkout
             - python/load-cache
-            - python/install-deps
+            - run: pip install --user -r requirements.txt -r requirements.dev.txt
             - python/save-cache
             - run: make test
             - store_test_results:
                 path: test-results
-            - store_artifact:
+            - store_artifacts:
                 path: test-results
                 destiation: tr1
 workflows:
+    version: 2
+
     main:
         jobs:
             - build

@@ -26,3 +26,23 @@ sys.modules[m.__name__] = m
 
 del sys
 del HPMZooModule
+
+__all__ = [
+    "__author__",
+    "__author_email__",
+    "__title__",
+    "__url__",
+    "__version__",
+    "DoubleAssignmentException",
+    "EmptyValue",
+    "HyperParameterManager",
+    "NotLiteralEvaluable",
+    "NotLiteralNameException",
+    "SourceHelper",
+    "HyperParameterDB",
+    "HyperParameterDBLambdas",
+    "HyperParameterOccurrence",
+    "HyperParameterPriority",
+    "L",
+    "P",
+]
