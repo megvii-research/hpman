@@ -84,9 +84,10 @@ lib.add() = 5
 lib.mult() = 6
 ```
 
-This is the core library designed for data manipulation. You may want to use a
-better front-end:
-- [CLI examples](https://github.com/megvii-research/hpargparse)
+The core library is designed as a backend for hyperparameter data manipulation,
+rather than an end-to-end solution. **It is highly recommend to start with a
+better frontend**:
+- CLI frontend: [hpargparse](https://github.com/megvii-research/hpargparse)
 
 
 # Installation
@@ -294,7 +295,7 @@ optional arguments:
                         be set to override auto file type deduction.
   --hp-exit             process all hpargparse actions and quit
 ```
-(Example are taken from [hpargparse](https://github.com/megvii-research/hpargparse))
+(Example taken from [hpargparse](https://github.com/megvii-research/hpargparse))
 
 We are now both **distributed** (write anywhere) and **centralized** (manage them as a whole).
 
