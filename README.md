@@ -6,7 +6,7 @@
 
 [![CircleCI](https://img.shields.io/circleci/build/github/megvii-research/hpman/circleci-project-setup?token=ed5f797ce0fa7a23f1930864879557ec5a1e82d4)](https://app.circleci.com/pipelines/github/megvii-research/hpman)
 [![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
-[![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
+[![codecov](https://img.shields.io/codecov/c/github/megvii-research/hpman)](https://codecov.io/gh/megvii-research/hpman)
 
 
 **hpman** is a hyperparameter manager (HPM) library that truly makes sense.
