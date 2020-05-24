@@ -17,8 +17,7 @@ jobs:
             - store_artifacts:
                 path: test-results
                 destiation: tr1
-            - codecov/upload:
-                file: test-results/htmlcov
+            - codecov/upload
 workflows:
     version: 2
 
