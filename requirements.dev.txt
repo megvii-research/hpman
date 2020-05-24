@@ -2,6 +2,7 @@
 autoflake
 # XXX: since we need python3.5 compatibility, we drop the requirements of black
 black
+coverage
 flake8
 isort
 m2r
