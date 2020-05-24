@@ -20,11 +20,6 @@ command line interface, IDE integration, experiment management system, etc.
 hpman supports Python version greater equal than 3.5.
 
 
-# Installation
-```bash
-pip install hpman
-```
-
 # Example
 
 `lib.py`:
@@ -89,11 +84,9 @@ lib.add() = 5
 lib.mult() = 6
 ```
 
-This is the core library designed for data manipulation. You may want use
-a better front-end:
-- [CLI examples](TODO:link-to-hpargparse)
-- [Jupyter examples](TODO:link-to-hpjupyter)
-- [VSCode Extension](TODO:link-to-hpcode)
+This is the core library designed for data manipulation. You may want to use a
+better front-end:
+- [CLI examples](https://github.com/megvii-research/hpargparse)
 
 
 # Installation
@@ -151,7 +144,7 @@ that in deep learning research.
 However, it is quite common for researchers to add some hyperparameters at
 their inspiration (e.g., suddenly come up with a "Temperature" parameter in
 softmax.). They found pleasure in tweaking the hyperparameters, but quickly
-abandon it if the experiment goes wrong.  These acts are called [Non-Recurring
+abandon it if the experiment goes wrong. These acts are called [Non-Recurring
 Engineering (NRE)](https://en.wikipedia.org/wiki/Non-recurring_engineering).
 
 In these cases, the "centralized HPM" reveals obvious drawbacks:
@@ -176,8 +169,8 @@ but also be error-prone to bugs.
 ## Distributed HPM
 So researchers come to another solution: forget about config files; define and
 use whatever hyperparameters whenever you need, anywhere in the project. We
-call this "Distributed HPM".  However, this is hardly called "management"; it
-is more like anarchism: no management is the best management. This makes add a
+call this "Distributed HPM". However, this is hardly called "management"; it
+is more like anarchism: no management is the best management. It makes adding a
 hyperparameter cheap: let yourself free and do whatever you want.
 
 > Let it go, let it go
@@ -205,7 +198,7 @@ communication, reproduction, and engineering. Nobody knows what happened, when
 did it happen, and nobody knows how to know easily. You know nothing, unless
 you read and diff through all the source codes.
 
-> You know nothing, John Snow.
+> You know nothing, Jon Snow.
 >
 > 咱也不知道，咱也不敢问呀
 
@@ -301,7 +294,7 @@ optional arguments:
                         be set to override auto file type deduction.
   --hp-exit             process all hpargparse actions and quit
 ```
-(Example are taken from [hpargparse](TODO:link-to-hpargparse-example))
+(Example are taken from [hpargparse](https://github.com/megvii-research/hpargparse))
 
 We are now both **distributed** (write anywhere) and **centralized** (manage them as a whole).
 
@@ -322,13 +315,13 @@ Also, expression evaluation in hpman is quite safe as we are using
 
 # Features
 ## Aribitrary Imports
-The hyperparameter managers are the most important objects of hpman.  We are
+The hyperparameter managers are the most important objects of hpman. We are
 using `from hpman.m import _` throughout the tutorial, as well as recommending
 using underscore ("_", courtesy of
 [gettext](https://www.gnu.org/software/gettext/)) as the name of imports in
 practice, but you can actually use anything name you want.
 
-The `hpman.m` module is configure to allow arbitrary imports. Whatever you
+The `hpman.m` module is configured to allow arbitrary imports. Whatever you
 import will always be an object of hyperparameter manager and works the same as
 "_":
 
@@ -339,21 +332,24 @@ abc('a', 2)
 _('hello', 3)
 ```
 
-Hyperparameter manager imports by different names work independently, and work
-in parallel. Imports of the same name are cached; imports of the same name in
-same process will return always the same object.
+Hyperparameter managers imported by different names work independently, and work
+in parallel. Imports of the same name are cached in the sense that, imports of
+the same name in same process will return always the same object.
 
 
 There are caveats:
-- Assignment of these imported objects to variables will not work in static parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
+- Assignment of these imported objects to variables will not work in static
+  parsing (will be addressed later), but works at runtime (if you skipped
+  parsing stage). e.g.:
 
 ```python
 # XXX: BAD EXAMPLE
 from hpman.m import _
 hello = _  # this breaks the rule
-hello('a', 1)  # <-- hpman will not ware this 'a' hyperparameter.
+hello('a', 1)  # <-- hpman will not be aware of this 'a' hyperparameter.
 ```
-- Variables share the same name with `hpman.m` imports will be statically parsed by hpman, but will not work as expected at runtime. e.g.:
+- Variables share the same name with `hpman.m` imports will be statically
+  parsed by hpman, but will not work as expected at runtime. e.g.:
 
 ```python
 def func(*args, **kargs):
@@ -371,8 +367,8 @@ print(_.parse_file(__file__).get_values())
 ```
 
 ## Define Hyperparameters
-The most basic (and the most frequently used) function  of hpman is to
-define a hyperparameter.
+The most basic (and the most frequently used) function of hpman is to define a
+hyperparameter.
 
 ```python
 from hpman.m import _
@@ -393,24 +389,25 @@ def training_loop():
 
 There are few caveats:
 1. Among all the occurrence of a same hyperparameter, **one and only one**
-   occurrence should come with default value, but which one does not matter
-   (you can surely first use, then define default value in later occurrence).
+   occurrence should come with a default value. Nonetheless, which one has
+   the default value does not matter (you can surely first use, then define
+   the default value in later occurrence).
 2. The name of the hyperparameter must be a **literal string**.
 3. The value of the hyperparameter can be arbitrary object (variable, lambda,
    string, whatever), but it is highly recommended to use only **literval
    values**, which is precisely defined by what `ast.literal_eval` function
-   accepts. It not makes the serialization of hyperparameters in downstream
-   frameworks (such as hpargparse) easier, but also improves interoperability
-   of hyperparameter settings among different programming languages and
-   frameworks. The readability of dumped hyperparameters will be more readable
-   as well.
+   accepts. It not only makes the serialization of hyperparameters in
+   downstream frameworks (such as hpargparse) easier, but also improves
+   interoperability of hyperparameter settings among different programming
+   languages and frameworks. The readability of dumped hyperparameters will be
+   more readable as well.
 
 ## Static Parsing
 We employ static parsing to retrieve information of where and how you are using
 the hyperparameters in your source codes. It is employed by `_.parse_file` and
 `_.parse_source`.
 
-- `_.parse_file` accepts file paths, directory names, or a list of both.  It
+- `_.parse_file` accepts file paths, directory names, or a list of both. It
   internally calls `_.parse_source`.
 - `_.parse_source` accepts only a piece of source code string.
 
@@ -445,7 +442,7 @@ _.set_value('varname', value)
 
 It provides an interface to store and retrieve aribitrary information provided
 at hyperparameter definition.
-Downstream libraries and frameworks could utilies these provided information to
+Downstream libraries and frameworks could utilize these provided information to
 better serve its own purpose.
 
 For example, say we would like to create an argparse interface for setting
@@ -530,3 +527,6 @@ make format
 ```base
 make style-check
 ```
+
+# CAVEAT
+This project is still in its early-stage. API may subject to radical changes (until vesion 1.0.0).
