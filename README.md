@@ -502,6 +502,11 @@ hints_example.py: error: argument --optimizer: invalid choice: 'rmsprop' (choose
 
 The example can be found at [examples/02-hints](examples/02-hints)
 
+# Best Practices
+It is advised that
+1. DO use hpman when **global hyperparameters are needed** (e.g., config.{py,yml,json}). hpman can substitute a global config file theoretically.
+2. DO NOT use hpman in python libraries share among projects, unless you fully aware what the consequences are.
+
 # Development
 1. Install requirements:
 ```bash
