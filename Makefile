@@ -4,7 +4,7 @@ test:
 	python3 -m pytest \
 	    --cov=hpman \
 	    --no-cov-on-fail \
-	    --cov-report=html:htmlcov \
+	    --cov-report=html:test-results/htmlcov \
 	    --cov-report term \
 	    --doctest-modules \
 	    hpman tests
@@ -20,7 +20,7 @@ style-check:
 	mypy hpman
 
 serve-coverage-report:
-	cd htmlcov && python3 -m http.server
+	cd test-results/htmlcov && python3 -m http.server
 
 wheel:
 	python3 setup.py sdist bdist_wheel

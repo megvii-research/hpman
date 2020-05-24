@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
     python: circleci/python@0.2.1
+    codecov: codecov/codecov@1.0.5
 jobs:
     build:
         docker:
@@ -16,6 +17,8 @@ jobs:
             - store_artifacts:
                 path: test-results
                 destiation: tr1
+            - codecov/upload:
+                file: test-results/htmlcov
 workflows:
     version: 2
 
