@@ -84,9 +84,10 @@ lib.add() = 5
 lib.mult() = 6
 ```
 
-The core library is designed for data manipulation, but not an end-to-end
-solution. You may want to use a better front-end:
-- [CLI examples](https://github.com/megvii-research/hpargparse)
+The core library is designed as a backend for hyperparameter data manipulation,
+rather than an end-to-end solution. **It is highly recommend to start with a
+better frontend**:
+- CLI frontend: [hpargparse](https://github.com/megvii-research/hpargparse)
 
 
 # Installation
