@@ -84,8 +84,8 @@ lib.add() = 5
 lib.mult() = 6
 ```
 
-This is the core library designed for data manipulation. You may want to use a
-better front-end:
+The core library is designed for data manipulation, but not an end-to-end
+solution. You may want to use a better front-end:
 - [CLI examples](https://github.com/megvii-research/hpargparse)
 
 
