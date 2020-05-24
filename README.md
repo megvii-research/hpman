@@ -295,7 +295,7 @@ optional arguments:
                         be set to override auto file type deduction.
   --hp-exit             process all hpargparse actions and quit
 ```
-(Example are taken from [hpargparse](https://github.com/megvii-research/hpargparse))
+(Example taken from [hpargparse](https://github.com/megvii-research/hpargparse))
 
 We are now both **distributed** (write anywhere) and **centralized** (manage them as a whole).
 
