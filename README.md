@@ -91,7 +91,7 @@ better front-end:
 
 # Installation
 ```
-pip install hpman
+python3 -m pip install hpman
 ```
 
 # Story
@@ -505,7 +505,7 @@ The example can be found at [examples/02-hints](examples/02-hints)
 # Development
 1. Install requirements:
 ```bash
-pip install -r requirements.dev.txt
+python3 -m pip install -r requirements.dev.txt
 ```
 
 2. Activate git commit template
@@ -519,13 +519,18 @@ pre-commit install
 ```
 
 4. To format your source code
-```base
+```bash
 make format
 ```
 
 5. To check the coding style
-```base
+```bash
 make style-check
+```
+
+6. To run the tests
+```bash
+make test
 ```
 
 # CAVEAT
