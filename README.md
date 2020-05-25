@@ -5,7 +5,7 @@
 # hpman (超参侠): The uncompromising hyperparameter manager.
 
 [![CircleCI](https://img.shields.io/circleci/build/github/megvii-research/hpman)](https://app.circleci.com/pipelines/github/megvii-research/hpman)
-[![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
+[![Docs](https://img.shields.io/readthedocs/hpman)](https://hpman.readthedocs.io/en/latest/)
 [![codecov](https://img.shields.io/codecov/c/github/megvii-research/hpman)](https://codecov.io/gh/megvii-research/hpman)
 
 
