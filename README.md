@@ -1,4 +1,4 @@
-![hpman logo](assets/hpman-logo.png)
+![hpman logo](https://github.com/megvii-research/hpman/blob/master/assets/hpman-logo.png)
 
 ---
 
