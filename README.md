@@ -401,7 +401,7 @@ There are a few caveats:
    downstream frameworks (such as hpargparse) easier but also improves the
    interoperability of hyperparameter settings among different programming
    languages and frameworks. The readability of dumped hyperparameters will be
-   more readable as well.
+   better as well.
 
 ## Static Parsing
 We employ static parsing to retrieve information on where and how you are using
