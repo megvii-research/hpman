@@ -1,10 +1,8 @@
+import ast
 import collections
 import enum
 import functools
-import ast
-from typing import Callable, Dict, List, Optional, Union, DefaultDict, Any
-
-from attrdict import AttrDict  # type: ignore
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from .primitives import DoubleAssignmentException, EmptyValue
 from .source_helper import SourceHelper
@@ -17,6 +15,12 @@ class HyperParameterPriority(enum.IntEnum):
 
 
 P = HyperParameterPriority
+
+
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
 
 class HyperParameterOccurrence(AttrDict):
