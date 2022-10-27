@@ -39,7 +39,7 @@ class HyperParameterManager:
     two phases: parsing-time and runtime. In parsing-time, source code are
     parsed to (A) set of user-defined hyperparameters with default values;
     while in runtime, user can (B) set/get defaults calling
-    HyperParameterManager object, and (C) set values with indention using
+    HyperParameterManager object, and (C) set values intentionally using
     methods. A HyperParameterManager object is usually created as some
     light-weight names, such as underscore "_". This is called a placeholder,
     and is vital to the parsing of source code. Hyperparameter values set
@@ -205,7 +205,7 @@ class HyperParameterManager:
                         "hp-name should be literal-string: L{}".format(node.lineno)
                     )
 
-                # Literal evaluate the hyperparameter naem
+                # Literal evaluate the hyperparameter name
                 name = ast.literal_eval(node.args[0])
                 lineno = node.lineno
 
@@ -318,8 +318,7 @@ class HyperParameterManager:
         """
 
         return {
-            node.get().name: node.value  # type: ignore
-            for node in self.tree.flatten()
+            node.get().name: node.value for node in self.tree.flatten()  # type: ignore
         }
 
     def get_tree(self, prefix: str = "", annotate_dict: bool = False) -> TreeMapping:
@@ -345,14 +344,12 @@ class HyperParameterManager:
         return tree.tree_values(annotate_dict=annotate_dict)
 
     def set_value(self, name: str, value: Primitive) -> "HyperParameterManager":
-        """Runtime setter. Set value with the highest priority.
-        """
+        """Runtime setter. Set value with the highest priority."""
         self.tree[name] = value
         return self
 
     def set_values(self, values: FlatMapping) -> "HyperParameterManager":
-        """Runtime setter. Set a dict of values with the highest priority.
-        """
+        """Runtime setter. Set a dict of values with the highest priority."""
         for k, v in values.items():
             self.tree[k] = v
         return self

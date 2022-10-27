@@ -1,0 +1,24 @@
+version: 2.1
+orbs:
+    python: circleci/python@0.2.1
+jobs:
+    build:
+        docker:
+            - image: circleci/python:3.6.7-jessie
+        steps:
+            - checkout
+            - python/load-cache
+            - run: pip install --user -r requirements.txt -r requirements.dev.txt
+            - python/save-cache
+            - run: make test
+            - store_test_results:
+                path: test-results
+            - store_artifacts:
+                path: test-results
+            - run: bash <(curl -s https://codecov.io/bash)
+workflows:
+    version: 2
+
+    main:
+        jobs:
+            - build

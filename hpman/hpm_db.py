@@ -26,8 +26,7 @@ P = HyperParameterPriority
 
 
 class HyperParameterOccurrence:
-    """A single occurrence of a statically pasred hyperparameter.
-    """
+    """A single occurrence of a statically pasred hyperparameter."""
 
     name = None  # type: str
     """Name of the hyperparameter"""
@@ -83,8 +82,7 @@ class HyperParamNode:
         self._db = []  # type: List[HyperParameterOccurrence]
 
     def push(self, occ: HyperParameterOccurrence):
-        """Push occurrence to current node, sort by priority.
-        """
+        """Push occurrence to current node, sort by priority."""
         if not len(self):
             self._db.append(occ)
             return
@@ -117,8 +115,7 @@ class HyperParamNode:
             self._db.insert(pos, occ)
 
     def get(self) -> Optional[HyperParameterOccurrence]:
-        """Get the occurrence with highest priority.
-        """
+        """Get the occurrence with highest priority."""
         if len(self) == 0:
             return None
 
@@ -126,8 +123,7 @@ class HyperParamNode:
 
     @property
     def db(self) -> List[HyperParameterOccurrence]:
-        """Get all occurrences.
-        """
+        """Get all occurrences."""
         if len(self) == 0:
             return []
 
@@ -135,8 +131,7 @@ class HyperParamNode:
 
     @property
     def value(self) -> Any:
-        """Get the value of the top occurrence.
-        """
+        """Get the value of the top occurrence."""
         if len(self) == 0:
             return EmptyValue()
 
@@ -144,8 +139,7 @@ class HyperParamNode:
 
     @property
     def empty(self):
-        """Node with no occurrence or empty occurrence is empty.
-        """
+        """Node with no occurrence or empty occurrence is empty."""
         return isinstance(self.value, EmptyValue)
 
     @classmethod
@@ -201,8 +195,7 @@ class HyperParamTree:
         self.node = None  # type: Optional[HyperParamNode]
 
     def flatten(self) -> Iterator[HyperParamNode]:
-        """Flatten the tree of hyperparamters to a sequence of HyperParameterOccurrences
-        """
+        """Flatten the tree of hyperparamters to a sequence of HyperParameterOccurrences"""
 
         def _wrapper(cur: HyperParamTree):
             if cur.is_leaf() and (cur.node is not None) and (not cur.node.empty):
@@ -299,8 +292,7 @@ class HyperParamTree:
         return ret
 
     def validate(self):
-        """Recursively validate current tree.
-        """
+        """Recursively validate current tree."""
         if not self.is_valid(strict=True):
             raise ImpossibleTree(
                 "`{}` is both a leaf and a tree.".format(self.node.name)

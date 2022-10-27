@@ -1,8 +1,7 @@
 class SourceHelper:
-    """Helper class to format source code for debugging.
-    """
+    """Helper class to format source code for debugging."""
 
-    def __init__(self, source: str):
+    def __init__(self, source: str) -> None:
         """Create a SourceHelper given source code.
 
         :param source: source code to be parsed

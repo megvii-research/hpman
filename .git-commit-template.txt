@@ -9,7 +9,7 @@
 # example: fix issue #23
 
 # --- COMMIT END ---
-# Type can be 
+# Type can be
 #    feat     (new feature)
 #    fix      (bug fix)
 #    refactor (refactoring production code)
@@ -17,6 +17,7 @@
 #    docs     (changes to documentation)
 #    test     (adding or refactoring tests; no production code change)
 #    chore    (updating grunt tasks etc; no production code change)
+#    release  (version bump)
 # --------------------
 # Remember to
 #    Capitalize the subject line

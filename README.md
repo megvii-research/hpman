@@ -1,4 +1,4 @@
-![hpman logo](assets/hpman-logo.png)
+![hpman logo](https://github.com/megvii-research/hpman/blob/master/assets/hpman-logo.png)
 
 ---
 
@@ -42,6 +42,80 @@ hpman supports Python version greater equal than 3.5.
 
 # Story / Background
 
+`lib.py`:
+```python
+# File: lib.py
+from hpman.m import _
+
+
+def add():
+    return _("a", 0) + _("b", 0)
+
+
+def mult():
+    return _("a") * _("b")
+```
+
+`main.py`:
+```python
+#!/usr/bin/env python3
+import os
+import argparse
+
+from hpman.m import _
+
+import lib
+
+
+def main():
+    basedir = os.path.dirname(os.path.realpath(__file__))
+    _.parse_file(basedir)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", default=_.get_value("a"), type=int)
+    parser.add_argument("-b", default=_.get_value("b"), type=int)
+    args = parser.parse_args()
+
+    _.set_value("a", args.a)
+    _.set_value("b", args.b)
+
+    print("a = {}".format(_.get_value("a")))
+    print("b = {}".format(_.get_value("b")))
+    print("lib.add() = {}".format(lib.add()))
+    print("lib.mult() = {}".format(lib.mult()))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Results:
+```bash
+$ ./main.py
+a = 0
+b = 0
+lib.add() = 0
+lib.mult() = 0
+
+$ ./main.py -a 2 -b 3
+a = 2
+b = 3
+lib.add() = 5
+lib.mult() = 6
+```
+
+The core library is designed as a backend for hyperparameter data manipulation,
+rather than an end-to-end solution. **It is highly recommend to start with a
+better frontend**:
+- CLI frontend: [hpargparse](https://github.com/megvii-research/hpargparse)
+
+
+# Installation
+```
+python3 -m pip install hpman
+```
+
+# Story
 Managing ever-changing hyperparameters is a pain in the a\*\*.
 From the practice of performing enormous amount of deep learning experiments,
 we found two existing hyperparameter managing patterns of the utmost
@@ -108,7 +182,7 @@ In these cases, the "centralized HPM" reveals obvious drawbacks:
    "declare" it in the configuration file, while using it in some
    deeply-nested easy-to-forget files.
 2. Whenever you need to abandon an existing hyperparameter, you must not only
-   remove all the apearances of that hyperparameter in some deeply-nested
+   remove all the appearances of that hyperparameter in some deeply-nested
    easy-to-forget files, but also remove it in the centralized configuration
    file.
 3. There's a "Heisenberg uncertainty principle" on hyperparameters: you cannot
@@ -255,7 +329,7 @@ optional arguments:
                         be set to override auto file type deduction.
   --hp-exit             process all hpargparse actions and quit
 ```
-(Example are taken from [hpargparse](TODO:link-to-hpargparse-example))
+(Example taken from [hpargparse](https://github.com/megvii-research/hpargparse))
 
 We are now both **distributed** (write anywhere) and **centralized** (manage them as a whole).
 
@@ -274,106 +348,22 @@ Also, expression evaluation in hpman is quite safe as we are using
 `ast.literal_eval`.
 
 
-# Installation
-
-```bash
-pip install hpman
-```
-
-# Usage
-
-
-
-# Examples
-
-`lib.py`:
-
-```python
-# File: lib.py
-from hpman.m import _
-
-
-def add():
-    return _("a", 0) + _("b", 0)
-
-
-def mult():
-    return _("a") * _("b")
-```
-
-`main.py`:
-
-```python
-#!/usr/bin/env python3
-import os
-import argparse
-
-from hpman.m import _
-
-import lib
-
-
-def main():
-    basedir = os.path.dirname(os.path.realpath(__file__))
-    _.parse_file(basedir)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", default=_.get_value("a"), type=int)
-    parser.add_argument("-b", default=_.get_value("b"), type=int)
-    args = parser.parse_args()
-
-    _.set_value("a", args.a)
-    _.set_value("b", args.b)
-
-    print("a = {}".format(_.get_value("a")))
-    print("b = {}".format(_.get_value("b")))
-    print("lib.add() = {}".format(lib.add()))
-    print("lib.mult() = {}".format(lib.mult()))
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Results:
-
-```bash
-$ ./main.py
-a = 0
-b = 0
-lib.add() = 0
-lib.mult() = 0
-
-$ ./main.py -a 2 -b 3
-a = 2
-b = 3
-lib.add() = 5
-lib.mult() = 6
-```
-
-This is the core library designed for data manipulation. You may want use
-a better front-end:
-
-- [CLI examples](TODO:link-to-hpargparse)
-- [Jupyter examples](TODO:link-to-hpjupyter)
-- [VSCode Extension](TODO:link-to-hpcode)
-
 # Features
 
 ## Design principles
 
 1. Low runtime overhead.
 
-2. Values of hyperparameter can be any type. 
+2. Values of hyperparameter can be any type.
 
-## Aribitrary Imports
-The hyperparameter managers are the most important objects of hpman.  We are
-using `from hpman.m import _` throughout the tutorial, as well as recommending
+## Arbitrary Imports
+Hyperparameter managers are the most important objects of hpman. We are
+using `from hpman.m import _` throughout the tutorial, as well as recommend
 using underscore ("_", courtesy of
 [gettext](https://www.gnu.org/software/gettext/)) as the name of imports in
 practice, but you can actually use anything name you want.
 
-The `hpman.m` module is configure to allow arbitrary imports. Whatever you
+The `hpman.m` module is configured to allow arbitrary imports. Whatever you
 import will always be an object of hyperparameter manager and works the same as
 "_":
 
@@ -384,21 +374,24 @@ abc('a', 2)
 _('hello', 3)
 ```
 
-Hyperparameter manager imports by different names work independently, and work
-in parallel. Imports of the same name are cached; imports of the same name in
-same process will return always the same object.
+Hyperparameter managers imported by different names work independently and work
+in parallel. Imports of the same name are cached in the sense that, imports of
+the same name in the same process will return always the same object.
 
 
 There are caveats:
-- Assignment of these imported objects to variables will not work in static parsing (will be addressed later), but works at runtime (if you skipped parsing stage). e.g.:
+- Assignment of these imported objects to variables will not work in static
+  parsing (will be addressed later), but works at runtime (if you skipped
+  parsing stage). e.g.:
 
 ```python
 # XXX: BAD EXAMPLE
 from hpman.m import _
 hello = _  # this breaks the rule
-hello('a', 1)  # <-- hpman will not ware this 'a' hyperparameter.
+hello('a', 1)  # <-- hpman will not be aware of this 'a' hyperparameter.
 ```
-- Variables share the same name with `hpman.m` imports will be statically parsed by hpman, but will not work as expected at runtime. e.g.:
+- Variables share the same name with `hpman.m` imports will be statically
+  parsed by hpman, but will not work as expected at runtime. e.g.:
 
 ```python
 def func(*args, **kargs):
@@ -416,8 +409,8 @@ print(_.parse_file(__file__).get_values())
 ```
 
 ## Define Hyperparameters
-The most basic (and the most frequently used) function  of hpman is to
-define a hyperparameter.
+The most basic (and the most frequently used) function of hpman is to define a
+hyperparameter.
 
 ```python
 from hpman.m import _
@@ -427,35 +420,36 @@ def training_loop():
     batch_size = _('batch_size', 128)
 
     # first use of `num_layer` is recommend to come with default value
-    print('num_layers = {}'.format(_('num__layers', 50)))
+    print('num_layers = {}'.format(_('num_layers', 50)))
 
     # use it directly without storing the values
     if _('use_resnet', True):
-	# second use of `num_layer` should not provide default value
-	for i in range(_('num_layers')):
-	    pass
+    # second use of `num_layer` should not provide default value
+    for i in range(_('num_layers')):
+        pass
 ```
 
-There are few caveats:
-1. Among all the occurrence of a same hyperparameter, **one and only one**
-   occurrence should come with default value, but which one does not matter
-   (you can surely first use, then define default value in later occurrence).
+There are a few caveats:
+1. Among all the occurrence of the same hyperparameter, **one and only one**
+   occurrence should come with a default value. Nonetheless, which one has the
+   default value does not matter (you can surely first use, then define the
+   default value in later occurrence).
 2. The name of the hyperparameter must be a **literal string**.
-3. The value of the hyperparameter can be arbitrary object (variable, lambda,
-   string, whatever), but it is highly recommended to use only **literval
-   values**, which is precisely defined by what `ast.literal_eval` function
-   accepts. It not makes the serialization of hyperparameters in downstream
-   frameworks (such as hpargparse) easier, but also improves interoperability
-   of hyperparameter settings among different programming languages and
-   frameworks. The readability of dumped hyperparameters will be more readable
-   as well.
+3. The value of the hyperparameter can be an arbitrary object (variable,
+   lambda, string, whatever), but it is highly recommended to use only
+   **literal values**, which is precisely defined by what `ast.literal_eval`
+   function accepts. It not only makes the serialization of hyperparameters in
+   downstream frameworks (such as hpargparse) easier but also improves the
+   interoperability of hyperparameter settings among different programming
+   languages and frameworks. The readability of dumped hyperparameters will be
+   better as well.
 
 ## Static Parsing
-We employ static parsing to retrieve information of where and how you are using
+We employ static parsing to retrieve information on where and how you are using
 the hyperparameters in your source codes. It is employed by `_.parse_file` and
 `_.parse_source`.
 
-- `_.parse_file` accepts file paths, directory names, or a list of both.  It
+- `_.parse_file` accepts file paths, directory names, or a list of both. It
   internally calls `_.parse_source`.
 - `_.parse_source` accepts only a piece of source code string.
 
@@ -469,16 +463,16 @@ _.parse_file(['main.py', 'library_dir'])
 _.parse_source('_("a", 1)')
 ```
 
-Parsing is done using `ast` module provided in the python standard library.
+Parsing is done using the `ast` module provided in the python standard library.
 We match all function calls with required syntax to detect proper calls to
 hyperparameter manager.
 
 ## Runtime Value Getter/Setter
-Value of a hyperparameter can be get by two ways in runtime:
+Value of a hyperparameter can be retrieved by two ways in runtime:
 1. use `__call__` syntax: `_('varname')`
 2. use dedicated function: `_.get_value('varname')`
 
-A dict of all hyperparameters can be get by `_.get_values()`
+A dict of all hyperparameters can be retrieved by `_.get_values()`
 
 Setting a hyperparameter can only be done with
 ```python
@@ -488,20 +482,20 @@ _.set_value('varname', value)
 ## Hints
 **Hints** is intended to provide a mechanism for extending hpman.
 
-It provides an interface to store and retrieve aribitrary information provided
+It provides an interface to store and retrieve arbitrary information provided
 at hyperparameter definition.
-Downstream libraries and frameworks could utilies these provided information to
-better serve its own purpose.
+Downstream libraries and frameworks could utilize this provided information to
+better serve its purpose.
 
 For example, say we would like to create an argparse interface for setting
-hyperparameters from the command line, user could write something like
+hyperparameters from the command line, a user could write something like
 
 ```python
 _('optimizer', 'adam', choices=['adam', 'sgd'])
 ```
 
-in the their codebase, and in the entry point of the program, we could
-retrieve these information and provide better argparse options:
+in their codebase, and the entry point of the program, we could
+retrieve this information and provide better argparse options:
 
 ```python
 # File: hints_example.py
@@ -550,6 +544,8 @@ hints_example.py: error: argument --optimizer: invalid choice: 'rmsprop' (choose
 
 The example can be found at [examples/02-hints](examples/02-hints)
 
+
+
 ## Nested Hyperparameters
 
 当超参数数量增多时，会带来管理压力。我们经常将超参数分为若干族，使用相同的前缀方便管理。
@@ -584,8 +580,48 @@ hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
 **缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
 因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
 
-# Contributing
+# Best Practices
+It is advised that
+1. DO use hpman when **global hyperparameters are needed** (e.g., config.{py,yml,json}). hpman can substitute a global config file theoretically.
+2. DO NOT use hpman in python libraries share among projects, unless you fully aware what the consequences are.
 
+# Development
+1. Install requirements:
+```bash
+python3 -m pip install -r requirements.dev.txt
+```
+
+2. Activate git commit template
+```
+git config commit.template .git-commit-template.txt
+```
+
+3. Install pre-commit hook
+```bash
+pre-commit install
+```
+
+4. To format your source code
+```bash
+make format
+```
+
+5. To check the coding style
+```bash
+make style-check
+```
+
+6. To run the tests
+```bash
+make test
+```
+
+# CAVEAT
+This project is still in its early stage. API may subject to radical changes
+(until version 1.0.0).
+
+
+# Contributing
 
 
 # License
