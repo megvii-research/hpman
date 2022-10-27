@@ -1,12 +1,18 @@
-import collections
-import enum
-import functools
 import ast
-from typing import Callable, Dict, List, Optional, Union, DefaultDict, Any
+import enum
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Union,
+)
 
-from attrdict import AttrDict  # type: ignore
-
-from .primitives import DoubleAssignmentException, EmptyValue
+from .primitives import DoubleAssignmentException, EmptyValue, ImpossibleTree, Primitive
 from .source_helper import SourceHelper
 
 
@@ -19,15 +25,13 @@ class HyperParameterPriority(enum.IntEnum):
 P = HyperParameterPriority
 
 
-class HyperParameterOccurrence(AttrDict):
-    """A single occurrence of a statically pasred hyperparameter. Subclasses
-    dict.
-    """
+class HyperParameterOccurrence:
+    """A single occurrence of a statically pasred hyperparameter."""
 
     name = None  # type: str
     """Name of the hyperparameter"""
 
-    value = EmptyValue()  # type: Any
+    value = EmptyValue()
     """Value of the hyperparameter. An instance of :class:`.primitives.EmptyValue`
     should present if value is not set."""
 
@@ -54,206 +58,89 @@ class HyperParameterOccurrence(AttrDict):
     """Hints provided by user of this occurrence of the hyperparameter.  Will
     only present in parsed hyperparameters """
 
-    # XXX: In python 3.6, we would use `attr_dict_bind` library to implement
-    #     attribute dict binding mechanism with user defined attributes
-    #     straighforwardly.
-    #     However, to accommodate python 3.5, we implement the same function
-    #     using `attrdict` along with the following ugly hacks.
-    __defaults = {
-        "name": None,
-        # This empty value instance is vital; we rely on this exact sentinel
-        # object group all empty values.
-        "value": EmptyValue(),
-        "priority": None,
-        "filename": None,
-        "lineno": None,
-        "ast_node": None,
-        "hints": None,
-    }
+    source_helper = None  # type: SourceHelper
+    """Source infomation and helper functions for this occurrence.
+    """
 
-    def __init__(self, *args, **kwargs):
-        # Make a **shallow** copy of default values (as we need the EmptyValue
-        # sentinel to be the same across instances of HyperParameterOccurrence)
-        d = self.__defaults.copy()
-
-        # get user passed dict initialization
-        v = dict(*args, **kwargs)
-
-        # ... and overrides defaults
-        d.update(v)
-
-        for name in self.__defaults:
-            if hasattr(self, name):
-                # XXX: remove user defined attributes as AttrDict does not works
-                # with them
-                delattr(type(self), name)
-        super().__init__(*args, **d)
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            if not k.startswith("_") and hasattr(HyperParameterOccurrence, k):
+                setattr(self, k, v)
 
     @property
     def has_default_value(self):
         return not isinstance(self.value, EmptyValue)
 
+    @property
+    def value_priority(self):
+        return self.priority * 10 - isinstance(self.value, EmptyValue)
 
-class HyperParameterDB(list):
-    """A list of HyperParameterOccurrence. It is required that only one of the
-    underlying occurrences should have a default value. Subclasses list. It
-    provides SQL/pandas-like syntax to access the data.
 
-    :note: This *DB* is quite functional and does not provide the concept of
-        *view*. Most operations provided return a new instance. We provide
-        back-reference ability by assign an auto increment index to every
-        entry.
-    """
+class HyperParamNode:
+    def __init__(self, name: str = ""):
+        self.name = name
+        self._db = []  # type: List[HyperParameterOccurrence]
 
-    index_count = None  # type: int
-    """Auto increment counter"""
+    def push(self, occ: HyperParameterOccurrence):
+        """Push occurrence to current node, sort by priority."""
+        if not len(self):
+            self._db.append(occ)
+            return
 
-    def __init__(self, *args, **kwargs):
-        self.index_count = 0
-        super().__init__(*args, **kwargs)
+        top = self.get()
+        assert occ.name == top.name  # type: ignore
 
-    # -- database operations
-    def copy(self):
-        return HyperParameterDB(super().copy())
+        # push from static parsing
+        if occ.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE:
+            self._db.append(occ)
+            self._db.sort(key=lambda x: -x.value_priority)
+            return
 
-    def group_by(self, column: str) -> Dict[str, "HyperParameterDB"]:
-        """Group data by given attribute/column.
-
-        :param column: The attribute to be grouped by.
-        """
-        groups = collections.defaultdict(
-            HyperParameterDB
-        )  # type: DefaultDict[str, HyperParameterDB]
-        for i in self:
-            groups[getattr(i, column)].append(i)
-        return groups
-
-    def indexing(self, idx: Union[int, List[int]]):
-        """Indexing using a integer or a list of integers.
-
-        :param idx: index of HyperParameterOccurrence to be fetched
-        """
-        if isinstance(idx, int):
-            return self[idx]
-        if isinstance(idx, list):
-            return HyperParameterDB([self[i] for i in idx])
-        raise IndexError("Unknown index: {}".format(idx))
-
-    def select(
-        self, where: Callable[[HyperParameterOccurrence], bool]
-    ) -> "HyperParameterDB":
-        """Select rows from database.
-
-        :param where: a function takes a row and returns whether this row
-            should be retained.
-        """
-        return HyperParameterDB([i for i in self if where(i)])
-
-    def count(self, where: Callable[[HyperParameterOccurrence], bool]) -> int:
-        """Count number of rows match given condition. Equivalent to
-        len(self.select(where))
-        """
-        return sum(1 for i in self if where(i))
-
-    def extract_column(self, column: str) -> List[object]:
-        """Extract one column of values.
-
-        :param column: column name to be extracted
-
-        :return: list of values.
-        """
-        return [i[column] for i in self]
-
-    def choose_columns(self, *columns: List[str]) -> "HyperParameterDB":
-        """Extract columns to form a new database.
-
-        :param columns: list of column names to be extracted.
-        """
-        return HyperParameterDB([{c: i[c] for c in columns} for i in self])
-
-    def apply(
-        self, func: Callable[[HyperParameterOccurrence], HyperParameterOccurrence]
-    ) -> "HyperParameterDB":
-        """Apply func on each row, which modifies old db.
-
-        :param func: a function that takes a row, modifies it inplace.
-        :return: self
-        """
-        for i in self:
-            func(i)
-        return self
-
-    def reduce(
-        self,
-        reduce_func: Callable[[object, HyperParameterOccurrence], object],
-        initial=EmptyValue(),
-    ) -> object:
-        """Reduce the sequence to a single value. Raises ValueError if there's
-        no items to be reduced.
-
-        :param reduce_func: function takes two arguments, the first one is
-            the previous result, and second is a new coming value in the sequence.
-        :param initial: if given, will be sent to reduce_func as its first argument
-            in the beginning; otherwise, the first element in the sequence is sent.
-        """
-        # TODO: more memory efficient implementation
-
-        if not isinstance(initial, EmptyValue):
-            value = initial
-            i = 0
+        pos, replacement = -1, False
+        for i, v in enumerate(self._db):
+            pos = i
+            # if current priority is lower than new, insert here
+            if v.value_priority < occ.value_priority:
+                break
+            # only one slot for each priority
+            elif v.value_priority == occ.value_priority:
+                replacement = True
+                break
         else:
-            if len(self) == 0:
-                raise ValueError("No object to be aggregated.")
-            value = self[0]
-            i = 1
+            pos = len(self._db)
 
-        for j in range(i, len(self)):
-            value = reduce_func(value, self[j])
+        if replacement:
+            self._db[pos] = occ
+        else:
+            self._db.insert(pos, occ)
 
-        return value
+    def get(self) -> Optional[HyperParameterOccurrence]:
+        """Get the occurrence with highest priority."""
+        if len(self) == 0:
+            return None
 
-    def empty(self) -> bool:
-        """Whether the db is empty"""
-        return len(self) == 0
+        return self._db[0]
 
-    def sorted(
-        self, key: Callable[[HyperParameterOccurrence], int], reverse: bool = False
-    ) -> "HyperParameterDB":
-        """Sort the rows of the db. See builtin function `sorted`"""
-        return HyperParameterDB(sorted(self, key=key, reverse=reverse))
+    @property
+    def db(self) -> List[HyperParameterOccurrence]:
+        """Get all occurrences."""
+        if len(self) == 0:
+            return []
 
-    def any(self, func: Callable[[HyperParameterOccurrence], bool]) -> bool:
-        """If **one** of the results after applying the given function to each row
-        is True, then returns true. The evaluation is short-circuited.
+        return self._db
 
-        :param func: The funcion maps a row to a boolean value, which will be
-            applied to each row of the database.
-        """
-        return any(map(func, self))
+    @property
+    def value(self) -> Any:
+        """Get the value of the top occurrence."""
+        if len(self) == 0:
+            return EmptyValue()
 
-    def all(self, func: Callable[[HyperParameterOccurrence], bool]) -> bool:
-        """If **all** of the results after applying the given function to each row
-        is True, then returns true. The evaluation is short-circuited.
+        return self._db[0].value
 
-        :param func: The funcion maps a row to a boolean value, which will be
-            applied to each row of the database.
-        """
-        return all(map(func, self))
-
-    def find_first(
-        self, where: Callable[[HyperParameterOccurrence], bool]
-    ) -> Optional[HyperParameterOccurrence]:
-        """Find the first row which matches given condition.
-
-        :param where: The function takes a row and returns a boolean value,
-            indicating whether a row should be retained.
-        :return: A row is returned if at least one match is found; otherwise
-            None will be returned.
-        """
-        for i in self:
-            if where(i):
-                return i
-        return None
+    @property
+    def empty(self):
+        """Node with no occurrence or empty occurrence is empty."""
+        return isinstance(self.value, EmptyValue)
 
     @classmethod
     def format_occurrence(cls, occurrence: HyperParameterOccurrence, **kwargs) -> str:
@@ -262,40 +149,160 @@ class HyperParameterDB(list):
         :param occurrence: the occurrence to be formated
         """
         assert occurrence is not None
-        return occurrence["source_helper"].format_given_filename_and_lineno(
-            occurrence["filename"], occurrence["lineno"]
+        return occurrence.source_helper.format_given_filename_and_lineno(
+            occurrence.filename, occurrence.lineno
         )
 
-    def _do_push_occurrence(self, occurrence):
-        occurrence["index"] = self.index_count
-        self.index_count += 1
-        self.append(occurrence)
+    def _check_source_code_double_assigment(self, occ):
+        for item in self._db:
+            if not item.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE:
+                continue
 
-    def _do_set_occurrence(self, idx, occurrence):
-        s = self[idx]
-        occurrence["index"] = s["index"]
-        self[idx] = occurrence
+            if item.has_default_value:
+                error_msg = (
+                    "Duplicated default values:\n"
+                    "First occurrence:\n"
+                    "{}\n"
+                    "Second occurrence:\n"
+                    "{}\n"
+                ).format(self.format_occurrence(item), self.format_occurrence(occ))
+                raise DoubleAssignmentException(error_msg)
 
-    def _check_source_code_double_assigment(self, occurrence):
-        s = self.select(
-            lambda row: (
-                row.name == occurrence.name
-                and row.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE
+    def __len__(self):
+        return len(self._db)
+
+
+class HyperParamTree:
+
+    """A tree-mapping of HyperParameterOccurrence.
+    It is required that only one of the underlying occurrences should have a default value.
+    """
+
+    DICT_ANNOTATION = "__is_dict__"
+    """Annotation string to indicate that a dict is not a tree.
+    """
+
+    def __init__(self, separator: str = ".", name: str = ""):
+        """
+        :param separator: character to separate nested keys.
+        :param name: name of the current tree level.
+        """
+        assert len(separator) == 1
+
+        self.sep = separator
+        self.name = name
+        self.children = {}  # type: Dict[str, HyperParamTree]
+        self.node = None  # type: Optional[HyperParamNode]
+
+    def flatten(self) -> Iterator[HyperParamNode]:
+        """Flatten the tree of hyperparamters to a sequence of HyperParameterOccurrences"""
+
+        def _wrapper(cur: HyperParamTree):
+            if cur.is_leaf() and (cur.node is not None) and (not cur.node.empty):
+                yield cur.node
+
+            for v in cur.children.values():
+                yield from _wrapper(v)
+
+        yield from _wrapper(self)
+
+    def count(self):
+        """Get the number of all non-empty hyperparamters."""
+        acc = 0
+        for node in self.flatten():
+            acc += 1
+        return acc
+
+    @property
+    def empty(self):
+        """A tree with neither children nor node is empty."""
+        return (not self.children) and self.node is None
+
+    def is_leaf(self):
+        """If tree has no children, it is a leaf node."""
+        return not self.children
+
+    def is_branch(self):
+        """A valid tree with children is a branch or tree node."""
+        if not self.is_valid(strict=False):
+            return False
+
+        return len(self.children) > 0
+
+    def is_valid(self, strict=False):
+        """Whether the current top node is valid.
+
+        :param strict: In strict mode, nodes with both node value and children
+            are strictly invalid, often used in static parsing.
+            In non-strict mode, if node value is set in static parser,
+            node is still valid, often used in runtime.
+
+        :note:
+            Non-strict mode is useful when user needs to set nested params in
+            runtime (e.g. loading from yaml).
+            For example, a user can define a hyperparamter
+            with ``_('group', {'foo': bar})`` and then manually set it with
+            ``_.set_tree({'group': {'foo': baz} })``. In this case, ``group`` was
+            a leaf node by static parser, but converted to a tree node in runtime.
+        """
+        # leaf with value is always valid
+        if self.is_leaf():
+            return True
+
+        # non-leaf without current node is valid
+        if not self.node or self.node.empty:
+            return True
+
+        # if node is set in static parser, valid
+        if not strict:
+            occ = self.node.get()
+            if occ.priority < P.PRIORITY_SET_FROM_SETTER:
+                return True
+
+        # both children and node are set, impossible tree
+        return False
+
+    def tree_values(self, annotate_dict: bool = False) -> Dict[str, Any]:
+        """Get all hyperparamter in tree structure as a dict.
+
+        :param annotate_dict: If a leaf node has value type of dict,
+            add a dict annotation so it can be safely convert back to the same
+            tree structure. This is often used for safe serialization
+            (e.g. dump as yaml).
+        """
+
+        assert self.is_branch()
+
+        def _walk(tree: HyperParamTree, level: Dict[str, Any]):
+            for k, v in tree.children.items():
+                assert v.is_valid(strict=False)
+                if v.is_leaf():
+                    assert v.node is not None
+                    val = v.node.value
+                    if isinstance(val, dict) and annotate_dict:
+                        val = val.copy()  # make a shallow copy
+                        val[self.DICT_ANNOTATION] = True
+                    level[k] = val
+                else:
+                    level[k] = {}
+                    _walk(v, level[k])
+
+        ret = {}  # type: Dict[str, Any]
+        _walk(self, ret)
+        return ret
+
+    def validate(self):
+        """Recursively validate current tree."""
+        if not self.is_valid(strict=True):
+            raise ImpossibleTree(
+                "`{}` is both a leaf and a tree.".format(self.node.name)
             )
-        )
 
-        if s.any(L.has_default_value):
-            error_msg = (
-                "Duplicated default values:\n"
-                "First occurrence:\n"
-                "{}\n"
-                "Second occurrence:\n"
-                "{}\n"
-            ).format(
-                s.format_occurrence(s.find_first(L.has_default_value)),
-                s.format_occurrence(occurrence),
-            )
-            raise DoubleAssignmentException(error_msg)
+        if self.is_branch():
+            for v in self.children.values():
+                v.validate()
+
+        return True
 
     def push_occurrence(
         self,
@@ -306,95 +313,56 @@ class HyperParameterDB(list):
         """Add an hyperparameter occurrence. This method can only be used
         in static parsing phase.
         """
+
         assert isinstance(occurrence, HyperParameterOccurrence), (
             type(occurrence),
             occurrence,
         )
+        tree = self._allocate(occurrence.name)  # type: HyperParamTree
         set_from_src = occurrence.priority == P.PRIORITY_PARSED_FROM_SOURCE_CODE
+        if tree.node is None:
+            tree.node = HyperParamNode(occurrence.name)
 
         if set_from_src:  # multiple occurrence is permitted
             if occurrence.has_default_value:
                 if source_helper is not None:
-                    occurrence["source_helper"] = source_helper
-                self._check_source_code_double_assigment(occurrence)
-            self._do_push_occurrence(occurrence)
-        else:  # only one occurrence is permitted
-            s = self.select(
-                lambda row: (
-                    row.name == occurrence.name and row.priority == occurrence.priority
-                )
+                    occurrence.source_helper = source_helper
+                tree.node._check_source_code_double_assigment(occurrence)
+
+        tree.node.push(occurrence)
+        if not tree.is_valid(strict=True):
+            raise ImpossibleTree(
+                "node `{}` has is both a leaf and a tree.".format(occurrence.name)
             )
-            if s.empty():
-                self._do_push_occurrence(occurrence)
-            else:
-                assert len(s) == 1, len(s)
-                self._do_set_occurrence(s[0]["index"], occurrence)
 
+    def _allocate(self, key: str) -> "HyperParamTree":
+        def _wrapper(tree: HyperParamTree, route: Sequence[str]):
+            if not route:
+                return tree
 
-class HyperParameterDBLambdas:
-    # -- sort lambdas
-    # sort first by priority, then by value non-emptiness
-    @staticmethod
-    def value_priority(row: HyperParameterOccurrence):
-        return -(row.priority * 10 - isinstance(row.value, EmptyValue))
+            k, *rest = route
+            if k not in tree.children:
+                tree.children[k] = HyperParamTree(separator=tree.sep, name=k)
 
-    @staticmethod
-    def order_by(column: str):
-        return lambda row: getattr(row, column)
+            return _wrapper(tree.children[k], rest)
 
-    # -- select lambdas
-    @staticmethod
-    def has_default_value(row):
-        return not isinstance(row.value, EmptyValue)
+        return _wrapper(self, key.split(self.sep))
 
-    @staticmethod
-    def exist_attr(attr):
-        return lambda row: hasattr(row, attr) and (getattr(row, attr) is not None)
+    def get(self, key: str) -> Optional["HyperParamTree"]:
+        if not key:
+            return self
 
-    @staticmethod
-    def of_name(name):
-        return lambda row: row.name == name
+        cur, *rest = key.split(self.sep, maxsplit=1)
+        if cur not in self.children:
+            return None
 
-    @staticmethod
-    def of_name_prefix(prefix):
-        return lambda row: row.name.startswith(prefix)
+        rest_key = rest[0] if rest else ""
 
-    @staticmethod
-    def of_name_suffix(suffix):
-        return lambda row: row.name.endswith(suffix)
+        return self.children[cur].get(rest_key)
 
-    @staticmethod
-    def of_value(value):
-        return lambda row: row.value == value
-
-    @staticmethod
-    def of_priority(priority):
-        return lambda row: row.priority == priority
-
-    @staticmethod
-    def apply_column(column, func):
-        @functools.wraps(func)
-        def wrapper(row):
-            old_value = getattr(row, column)
-            new_value = func(old_value)
-            setattr(row, column, new_value)
-
-        return wrapper
-
-    @staticmethod
-    def land(*args):
-        """Logical and"""
-        return lambda row: all(f(row) for f in args)
-
-    @staticmethod
-    def lor(*args):
-        """Logical or"""
-        return lambda row: any(f(row) for f in args)
-
-    @staticmethod
-    def lnot(func):
-        """Logical not"""
-        return lambda row: not func(row)
-
-
-L = HyperParameterDBLambdas
+    def __setitem__(self, key: str, value: Primitive):
+        self.push_occurrence(
+            HyperParameterOccurrence(
+                name=key, value=value, priority=P.PRIORITY_SET_FROM_SETTER
+            )
+        )

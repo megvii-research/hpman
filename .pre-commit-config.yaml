@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/python/black
-  rev: stable
+  rev: 22.10.0
   hooks:
   - id: black
 - repo: https://github.com/pre-commit/pre-commit-hooks

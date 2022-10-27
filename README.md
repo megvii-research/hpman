@@ -4,23 +4,43 @@
 
 # hpman (超参侠): The uncompromising hyperparameter manager.
 
-[![CircleCI](https://img.shields.io/circleci/build/github/megvii-research/hpman)](https://app.circleci.com/pipelines/github/megvii-research/hpman)
-[![Docs](https://img.shields.io/readthedocs/hpman)](https://hpman.readthedocs.io/en/latest/)
-[![codecov](https://img.shields.io/codecov/c/github/megvii-research/hpman)](https://codecov.io/gh/megvii-research/hpman)
+[![Build Status](https://travis-ci.com/sshao0516/hpman.svg?token=CYoygxuBp4p1Cy7SznNt&branch=master)](https://travis-ci.com/sshao0516/hpman)
+[![Docs](https://readthedocs.com/projects/megvii-hpman/badge/?version=latest)](https://megvii-hpman.readthedocs-hosted.com/en/latest/)
+[![codecov](https://codecov.io/gh/sshao0516/hpman/branch/master/graph/badge.svg?token=XVeNX2NtUD)](https://codecov.io/gh/sshao0516/hpman)
 
+English | [简体中文](./README_CN.md)
 
-**hpman** is a hyperparameter manager (HPM) library that truly makes sense.
+**hpman** is a hyperparameter manager (HPM) library that truly make sense.
 It enables a Distributed-Centralized HPM experience in deep learning
-experiments. You can define hyperparameters anywhere, but manage them as a
+experiment. You can define hyperparameters anywhere, but manage them as a
 whole.
 
-hpman is intended to be used as a basic building block for downstream tools, such as
-command-line interface, IDE integration, experiment management system, etc.
+hpman is intended to be used as a basic building blocks for downstream tools, such as
+command line interface, IDE integration, experiment management system, etc.
 
 hpman supports Python version greater equal than 3.5.
 
+- [hpman (超参侠): The uncompromising hyperparameter manager.](#hpman-%e8%b6%85%e5%8f%82%e4%be%a0-the-uncompromising-hyperparameter-manager)
+- [Story / Background](#story--background)
+  - [Centralized HPM](#centralized-hpm)
+  - [However ...](#however)
+  - [Distributed HPM](#distributed-hpm)
+  - [Distributed-Centralized HPM](#distributed-centralized-hpm)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Features](#features)
+  - [Design principles](#design-principles)
+  - [Aribitrary Imports](#aribitrary-imports)
+  - [Define Hyperparameters](#define-hyperparameters)
+  - [Static Parsing](#static-parsing)
+  - [Runtime Value Getter/Setter](#runtime-value-gettersetter)
+  - [Hints](#hints)
+  - [Nested Hyperparameters](#nested-hyperparameters)
+- [Contributing](#contributing)
+- [License](#license)
 
-# Example
+# Story / Background
 
 `lib.py`:
 ```python
@@ -97,15 +117,17 @@ python3 -m pip install hpman
 
 # Story
 Managing ever-changing hyperparameters is a pain in the a\*\*.
-From the practice of performing an enormous amount of deep learning experiments,
+From the practice of performing enormous amount of deep learning experiments,
 we found two existing hyperparameter managing patterns of the utmost
 prevalence.
 
 ## Centralized HPM
+
 We call the first type "**centralized HPM**". It follows the way of
 configuration management in traditional software, regardless of using a python
 file or json or yaml or whatever that can store some key-value mapping (may
 remind you of `settings.ini`, `nginx.conf`, `config.yaml` etc.):
+
 ```python
 # File: config.py
 BATCH_SIZE = 256
@@ -126,29 +148,36 @@ from torch import nn
 import config
 
 def build_model():
-    model = nn.Sequential()
-    model.add_module('stem',nn.Sequential(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
-                        nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-                        nn.ReLU()))
-    for i in range(config.NUM_LAYERS - 1):
-        model.add_module(f'layer{i}', nn.Sequential(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
-                      nn.BatchNorm1d(config.HIDDEN_CHANNELS),
-                      nn.ReLU()))
-    model.add_module('fc', nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS))
-    return model
+    return nn.Sequence(
+    [
+        nn.Sequence(nn.Linear(config.INPUT_CHANNELS, config.HIDDEN_CHANNELS),
+            nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+            nn.ReLU())
+    ] + [
+        nn.Sequence(nn.Linear(config.HIDDEN_CHANNELS, config.HIDDEN_CHANNELS),
+            nn.BatchNorm1d(config.HIDDEN_CHANNELS),
+            nn.ReLU())
+        for i in range(config.NUM_LAYERS - 1)
+    ] + [
+        nn.Linear(config.HIDDEN_CHANNELS, config.OUTPUT_CHANNELS)
+    ]
+    )
 ```
-This way of manaing hyperparameters is widely seen in machine learning
+
+This way of managing hyperparameters is widely seen in machine learning
 libraries, e.g., xgboost, whose hyperparameters are fairly stable compare than
 that in deep learning research.
 
 ## However ...
+
 However, it is quite common for researchers to add some hyperparameters at
 their inspiration (e.g., suddenly come up with a "Temperature" parameter in
 softmax.). They found pleasure in tweaking the hyperparameters, but quickly
-abandon it if the experiment goes wrong. These acts are called [Non-Recurring
+abandon it if the experiment goes wrong.  These acts are called [Non-Recurring
 Engineering (NRE)](https://en.wikipedia.org/wiki/Non-recurring_engineering).
 
 In these cases, the "centralized HPM" reveals obvious drawbacks:
+
 1. Whenever you need to introduce a new hyperparameter, you must kind of
    "declare" it in the configuration file, while using it in some
    deeply-nested easy-to-forget files.
@@ -157,21 +186,21 @@ In these cases, the "centralized HPM" reveals obvious drawbacks:
    easy-to-forget files, but also remove it in the centralized configuration
    file.
 3. There's a "Heisenberg uncertainty principle" on hyperparameters: you cannot
-   know both what and where the hyperparameters are at the same time.  The
-   context around where the hyperparameter is used conveys valuable information
-   of the precise use-case of that hyperparameter.  You can either look it up
-   in the code, or the centralized config file.
+   know both what and where the hyperparameters are at the same time.
+   The context around where the hyperparameter are used conveys valuable
+   information of the precise usecase of that hyperparameter.
+   You can either look it up in the code, or in the centralized config file.
 
-These drawbacks essentially require the user to maintain a distributed data
+These drawbacks essentially requires the user to maintain a distributed data
 structure, which not only induces great mental burden doing experiments,
 but also be error-prone to bugs.
 
-
 ## Distributed HPM
+
 So researchers come to another solution: forget about config files; define and
 use whatever hyperparameters whenever you need, anywhere in the project. We
-call this "Distributed HPM". However, this is hardly called "management"; it
-is more like anarchism: no management is the best management. It makes adding a
+call this "Distributed HPM".  However, this is hardly called "management"; it
+is more like anarchism: no management is the best management. This makes add a
 hyperparameter cheap: let yourself free and do whatever you want.
 
 > Let it go, let it go
@@ -181,35 +210,39 @@ from torch import nn
 
 def build_model():
     hidden_channels = 128  # <-- hyperparameter
-    model=nn.Sequential()
-    model.add_module('stem',nn.Sequential(nn.Linear(784, hidden_channels), # <-- hyperparameter
+    return nn.Sequence(
+    [
+        nn.Sequence(nn.Linear(784, hidden_channels), # <-- hyperparameter
             nn.BatchNorm1d(hidden_channels),
-            nn.ReLU()))
-    for i in range(4):
-        model.add_module(f'layer{i}', nn.Sequential(nn.Linear(hidden_channels, hidden_channels),
+            nn.ReLU())
+    ] + [
+        nn.Sequence(nn.Linear(hidden_channels, hidden_channels),
             nn.BatchNorm1d(hidden_channels),
-            nn.ReLU()))
-    model.add_module('fc',nn.Linear(hidden_channels, 10))  # <-- hyperparameter
-    return model
+            nn.ReLU())
+        for i in range(4)  # <-- hyperparameter
+    ] + [
+        nn.Linear(hidden_channels, 10)  # <-- hyperparameter
+    ]
+    )
 ```
 
 However, barbaric growth of hyperparameters of different names in different
 places without governance would soon run into a disaster in knowledge sharing,
 communication, reproduction, and engineering. Nobody knows what happened, when
-did it happen, and nobody knows how to know easily. You know nothing unless
+did it happen, and nobody knows how to know easily. You know nothing, unless
 you read and diff through all the source codes.
 
 > You know nothing, Jon Snow.
 >
 > 咱也不知道，咱也不敢问呀
 
-
 ## Distributed-Centralized HPM
+
 Now we have two ways of managing hyperparameters: one is good for engineering
 but inconvenient for researchers, another one is convenient for researchers,
 but bad for engineering.
 
-We are uncompromising. We did not want to decide between these two
+We are uncompromising. We did not want to make a decision between these two
 choices; we want the best of both worlds.
 
 > Only children make choices, adults want them all.
@@ -247,6 +280,7 @@ if __name__ == "__main__":
 ```
 
 and you can:
+
 ```bash
 $ ./main.py
 weight decay is 1e-05
@@ -315,12 +349,19 @@ Also, expression evaluation in hpman is quite safe as we are using
 
 
 # Features
+
+## Design principles
+
+1. Low runtime overhead.
+
+2. Values of hyperparameter can be any type.
+
 ## Arbitrary Imports
 Hyperparameter managers are the most important objects of hpman. We are
 using `from hpman.m import _` throughout the tutorial, as well as recommend
 using underscore ("_", courtesy of
 [gettext](https://www.gnu.org/software/gettext/)) as the name of imports in
-practice, but you can use anything name you want.
+practice, but you can actually use anything name you want.
 
 The `hpman.m` module is configured to allow arbitrary imports. Whatever you
 import will always be an object of hyperparameter manager and works the same as
@@ -503,6 +544,42 @@ hints_example.py: error: argument --optimizer: invalid choice: 'rmsprop' (choose
 
 The example can be found at [examples/02-hints](examples/02-hints)
 
+
+
+## Nested Hyperparameters
+
+当超参数数量增多时，会带来管理压力。我们经常将超参数分为若干族，使用相同的前缀方便管理。
+
+你可以批量操作同一族的超参数。如将超参数导出成如下结构的yaml，提高了可读性。也可以直接导入树状结构的yaml。
+
+```yaml
+discriminator:
+  in_channels: 3
+  spectral: true
+  norm: 'instance'
+  activation: 'leaky_relu'
+  residual: true
+  input_size: [512, 512]
+```
+
+**Notice:** 一个key不能同时指向一棵树和一个值，你可以通过set_value和set_tree分别指明超参数的类型是value还是tree。当你通过下划线函数定义默认值时，会被视为是value。
+所以如下代码
+```python
+_('a', {'b': 1})    # 被视为name='a'的超参数，默认值为{'b': 1}。此时a是value。
+_('a.b')            # 被视为超参树a中的b，此时a是tree。
+```
+在运行时会抛出异常：
+```bash
+KeyError: '`a.b` not found'
+```
+在静态解析时会抛出异常：
+```bash
+hpman.primitives.ImpossibleTree: node `a` has is both a leaf and a tree.
+```
+
+**缺点 and 兼容性破坏：你不能使用两个超参数，一个是另一个的前缀 (split by '.')。**
+因为tree的name允许为空，所以你仍然可以在超参数的name中使用`.`，包括以`.`开头，以`.`结尾，或连续的`.`都是合法的。Like `_(".hpman is a good...man.")`.
+
 # Best Practices
 It is advised that
 1. DO use hpman when **global hyperparameters are needed** (e.g., config.{py,yml,json}). hpman can substitute a global config file theoretically.
@@ -542,3 +619,11 @@ make test
 # CAVEAT
 This project is still in its early stage. API may subject to radical changes
 (until version 1.0.0).
+
+
+# Contributing
+
+
+# License
+
+[MIT](LICENSE) © MEGVII Research

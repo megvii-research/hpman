@@ -20,24 +20,24 @@ class TestParse(unittest.TestCase):
         except Exception as e:
             self.assertEqual("parse with error: {}".format(e), "")
 
-        self.assertEqual(len(m.db), 9)
+        self.assertEqual(m.tree.count(), 9)
 
     def test_parse_file_with_combination_of_paths(self):
         m = self._create_hpm().parse_file(f("test_files/1/1.py"))
-        self.assertEqual(len(m.db), 9)
+        self.assertEqual(m.tree.count(), 9)
 
         m = self._create_hpm().parse_file(f("test_files/"))
-        self.assertEqual(len(m.db), 3 * 9)
+        self.assertEqual(m.tree.count(), 3 * 9)
 
         m = self._create_hpm().parse_file(
             list(map(f, ["test_files/1/1.py", "test_files/2/2.py"]))
         )
-        self.assertEqual(len(m.db), 2 * 9)
+        self.assertEqual(m.tree.count(), 2 * 9)
 
         m = self._create_hpm().parse_file(
             list(map(f, ["test_files/1", "test_files/2"]))
         )
-        self.assertEqual(len(m.db), 2 * 9)
+        self.assertEqual(m.tree.count(), 2 * 9)
 
     def test_parse_file_with_non_exist_path(self):
         self.assertRaises(
@@ -46,17 +46,17 @@ class TestParse(unittest.TestCase):
 
     def test_parse_file_with_not_py_path(self):
         m = self._create_hpm().parse_file(f("test_files/no_py"))
-        self.assertEqual(len(m.db), 0)
+        self.assertEqual(m.tree.count(), 0)
 
         m = self._create_hpm().parse_file(f("test_files/no_py/no_py.txt"))
-        self.assertEqual(len(m.db), 0)
+        self.assertEqual(m.tree.count(), 0)
 
     def test_parse_file_with_duplicated_paths(self):
         try:
             m = self._create_hpm().parse_file(
                 list(map(f, ["test_files/1/1.py", "test_files/1/1.py"]))
             )
-            self.assertEqual(len(m.db), 9)
+            self.assertEqual(m.tree.count(), 9)
         except Exception as e:
             self.fail("duplication path should be removed: {}".format(e))
 
@@ -64,6 +64,6 @@ class TestParse(unittest.TestCase):
             m = self._create_hpm().parse_file(
                 list(map(f, ["test_files/", "test_files/1/1.py"]))
             )
-            self.assertEqual(len(m.db), 27)
+            self.assertEqual(m.tree.count(), 27)
         except Exception as e:
             self.fail("duplication path should be removed: {}".format(e))

@@ -1,21 +1,24 @@
 import ast
 import glob
 import os
-from typing import Optional, Set
+from typing import Any, Dict, Optional, Set
 
 from .hpm_db import (
-    HyperParameterDB,
-    HyperParameterDBLambdas,
     HyperParameterOccurrence,
     HyperParameterPriority,
-    L,
+    HyperParamNode,
+    HyperParamTree,
     P,
 )
 from .primitives import (
     DoubleAssignmentException,
     EmptyValue,
+    FlatMapping,
+    ImpossibleTree,
     NotLiteralEvaluable,
     NotLiteralNameException,
+    Primitive,
+    TreeMapping,
 )
 from .source_helper import SourceHelper
 
@@ -24,7 +27,7 @@ from .source_helper import SourceHelper
 #     HyperParameterOccurrence
 #                 |
 #                 v
-#     HyperParameterDB
+#     HyperParameterTree
 #                 |
 #                 v
 #     HyperParameterManager
@@ -49,22 +52,30 @@ class HyperParameterManager:
     """Placeholder name of the HyperParameterManager object.
     """
 
-    db = None  # type: HyperParameterDB
-    """Hyperparameter database. ANYTHING you want is here.
+    separator = None  # type: str
+    """Separator character for nested hyperparameter names.
     """
 
-    def __init__(self, placeholder: str) -> None:
+    tree = None  # type: HyperParamTree
+    """Tree style hyperparameter database. ANYTHING you want is here.
+    """
+
+    def __init__(self, placeholder: str, separator: str = "."):
         """Create a hyperparameter manager.
 
         :param placeholder: placeholder name of this HyperParameterManager
             object. It is important to store this object in a variable in the name
             of this placeholder prior to defining hyperparameters by calling the
             object.
+
+        :param separator: separator character for nested hyperparameter names.
         """
         self.placeholder = placeholder
+        assert len(separator) == 1
+        self.separator = separator
 
         # The "Hyperparameter Value Triology"
-        self.db = HyperParameterDB()
+        self.tree = HyperParamTree()
 
     def parse_file(self, path: str) -> "HyperParameterManager":
         """Parse given file to extract hyperparameter settings.
@@ -167,10 +178,9 @@ class HyperParameterManager:
             Rules for the value of "value" depends on the type of parsed ast
             node.  The correspondance between node types and its actions are
             depicted as follows:
-                1. if `ast.literal_eval` returns without exception, the
-                    the evaluated results are filled in the dict.
-                2. otherwise a :class:`.primitives.NotLiteralEvaluable` sentinel object is
-                    filled
+
+            1. if ``ast.literal_eval`` returns without exception, the the evaluated results are filled in the dict.
+            2. otherwise a :class:`.primitives.NotLiteralEvaluable` sentinel object is filled
         """
         source_helper = SourceHelper(source)
 
@@ -178,8 +188,8 @@ class HyperParameterManager:
         for node in ast.walk(root_node):
             if (
                 isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Name)
-                and (node.func.id == self.placeholder)
+                and isinstance(node.func, ast.Name)  # noqa
+                and (node.func.id == self.placeholder)  # noqa
             ):
                 # Check the number of positional arguments
                 if len(node.args) < 1 or len(node.args) > 2:
@@ -231,18 +241,17 @@ class HyperParameterManager:
 
                 # Construct an occurrence
                 occ = HyperParameterOccurrence(
-                    {
-                        "name": name,
-                        "value": value,
-                        "filename": filename,
-                        "lineno": lineno,
-                        "ast_node": ast_node,
-                        "hints": hints,
-                        "priority": P.PRIORITY_PARSED_FROM_SOURCE_CODE,
-                    }
+                    name=name,
+                    value=value,
+                    filename=filename,
+                    lineno=lineno,
+                    ast_node=ast_node,
+                    hints=hints,
+                    priority=P.PRIORITY_PARSED_FROM_SOURCE_CODE,
                 )
-                self.db.push_occurrence(occ, source_helper=source_helper)
+                self.tree.push_occurrence(occ, source_helper=source_helper)
 
+        self.tree.validate()
         return self
 
     # runtime methods
@@ -256,7 +265,7 @@ class HyperParameterManager:
             return False
         return True
 
-    def get_value(self, name: str, *, raise_exception: bool = True) -> object:
+    def get_value(self, name: str, raise_exception: bool = True) -> TreeMapping:
         """Get the authoritative value of a hyperparameter.
         Will raise an exception if value does not exist by default.
 
@@ -264,55 +273,128 @@ class HyperParameterManager:
         :param raise_exception: Defaults to True; set false to suppress
             exception. In this case, the missing value will be an instance
             of :class:`.primitives.EmptyValue`
+
+        :return: Return the stored value if found. Otherwise, if raise_exception is False,
+            an :class:`.primitives.EmptyValue` object is returned.
         """
-        v = self.db.select(lambda row: row.name == name).sorted(L.value_priority)
-        if len(v) == 0:
-            value = EmptyValue()
-        else:
-            value = v[0]["value"]
 
-        if isinstance(value, EmptyValue) and raise_exception:
-            raise KeyError("`{}` not found".format(name))
-        return value
+        tree = self.tree.get(name)
 
-    def get_occurrence_of_value(self, name: str) -> Optional[HyperParameterOccurrence]:
+        if tree is None or tree.empty:
+            val = EmptyValue()  # type: ignore
+        elif tree.is_leaf():
+            assert tree.node is not None
+            val = tree.node.value  # type: ignore
+        elif tree.is_branch():
+            val = tree.tree_values()  # type: ignore
+
+        if isinstance(val, EmptyValue):
+            if raise_exception:
+                raise KeyError("`{}` not found".format(name))
+
+        return val  # type: ignore
+
+    def get_occurrence(self, name: str) -> Optional[HyperParameterOccurrence]:
         """
         :param hp_name: The name of the hyperparameter
 
         :return: a :class:`.hpm_db.HyperParameterOccurrence` object or None
         """
 
-        s = self.db.select(L.of_name(name)).sorted(L.value_priority)
-        return None if s.empty() else s[0]
+        tree = self.tree.get(name)
+        if tree is None or tree.empty:
+            return None
 
-    def get_values(self) -> dict:
+        if tree.is_leaf():
+            assert tree.node is not None
+            return tree.node.get()
+
+        return None
+
+    def get_values(self) -> FlatMapping:
         """Get all current available hyperparameters and their values.
 
         :return: dict of name to value.
         """
 
-        # It is guaranteed to have at least one element using group_by
         return {
-            k: d.sorted(L.value_priority)[0]["value"]
-            for k, d in self.db.group_by("name").items()
+            node.get().name: node.value for node in self.tree.flatten()  # type: ignore
         }
 
-    def set_value(self, name: str, value: object) -> "HyperParameterManager":
-        """Runtime setter. Set value with the highest priority.
+    def get_tree(self, prefix: str = "", annotate_dict: bool = False) -> TreeMapping:
+        """Get subtree of prefix from hyperparamter tree.
+
+        :param annotate_dict: If a leaf node has value type of dict,
+          add a dict annotation so it can be safely convert back to the same
+          tree structure. This is often used for safe serialization
+          (e.g. dump as yaml).
         """
-        self.db.push_occurrence(
-            HyperParameterOccurrence(
-                name=name, value=value, priority=P.PRIORITY_SET_FROM_SETTER
-            )
-        )
+        if self.tree.empty:
+            return {}
+
+        tree = (
+            self.tree.get(prefix) if prefix else self.tree
+        )  # type: Optional[HyperParamTree]
+
+        if tree is None:
+            return {}
+
+        assert tree.is_branch
+
+        return tree.tree_values(annotate_dict=annotate_dict)
+
+    def set_value(self, name: str, value: Primitive) -> "HyperParameterManager":
+        """Runtime setter. Set value with the highest priority."""
+        self.tree[name] = value
         return self
 
-    def set_values(self, values: dict) -> "HyperParameterManager":
-        """Runtime setter. Set a dict of values with the highest priority.
-        """
+    def set_values(self, values: FlatMapping) -> "HyperParameterManager":
+        """Runtime setter. Set a dict of values with the highest priority."""
         for k, v in values.items():
-            self.set_value(k, v)
+            self.tree[k] = v
         return self
+
+    def set_tree(
+        self, tree_values: TreeMapping, prefix: str = ""
+    ) -> "HyperParameterManager":
+        """Runtime setter.
+        Set a tree dict of nested values with the highest priority.
+
+        :param tree_values: nested hyperparameter names and values recursively
+            structured as Mapping[str, [Mapping, Primitive]]. As an exception, if
+            :attr:`.hpm_db.HyperParamTree.DICT_ANNOTATION` is set, it would be treated
+            as a node of dict instead of a tree.
+
+        :param prefix: the subtree prefix of hyperparameter tree to set.
+            If prefix is empty, the top tree will be set.
+        """
+        if not isinstance(prefix, str):
+            raise TypeError("Tree prefix must be a string.")
+
+        def make_flat_tree(tv: Dict[str, Any], acc: Dict[str, Any], key: str):
+            if not isinstance(tv, dict):
+                acc[key] = tv
+                return
+            elif HyperParamTree.DICT_ANNOTATION in tv:
+                is_dict = tv.pop(HyperParamTree.DICT_ANNOTATION)
+                if is_dict:
+                    acc[key] = tv
+                    return
+
+            key_prefix = [key] if key else []
+            for k, v in tv.items():
+                if not isinstance(k, str):
+                    raise ImpossibleTree(
+                        "Tree keys must be strings, but '{}.{}' is a '{}'.".format(
+                            key_prefix, k, type(k)
+                        )
+                    )
+                make_flat_tree(v, acc, self.separator.join(key_prefix + [k]))
+
+        flat_tree = {}  # type: Dict[str, Any]
+        make_flat_tree(tree_values, flat_tree, prefix)  # type: ignore
+
+        return self.set_values(flat_tree)
 
     def __call__(self, hp_name: str, hp_value: EmptyValue = EmptyValue(), **hints):
         """Runtime callable setter and getter. Will set the value with
@@ -321,7 +403,7 @@ class HyperParameterManager:
         # TODO: record runtime meta-info (filename, lineno, etc.) as well
         # XXX: recording TOO MUCH in runtime may harm performance
         if not isinstance(hp_value, EmptyValue):
-            self.db.push_occurrence(
+            self.tree.push_occurrence(
                 HyperParameterOccurrence(
                     name=hp_name, value=hp_value, priority=P.PRIORITY_SET_FROM_CALLABLE
                 )
