@@ -2,7 +2,7 @@ all:
 
 test:
 	mkdir -p test-results
-	python3 -m pytest \
+	PY_IGNORE_IMPORTMISMATCH=1 python3 -m pytest \
 	    --cov=hpman \
 	    --no-cov-on-fail \
 	    --cov-report=html:test-results/htmlcov \
