@@ -1,8 +1,12 @@
 import ast
 import unittest
+import sys
 
 import hpman
 from hpman.primitives import ImpossibleTree
+
+astNum = ast.Num if sys.version_info < (3, 8) else ast.Constant
+astStr = ast.Str if sys.version_info < (3, 8) else ast.Constant
 
 
 class TestParseSource(unittest.TestCase):
@@ -23,11 +27,11 @@ class TestParseSource(unittest.TestCase):
     def test_parse_type_with_pod(self):
         self._run(
             {
-                "_('hp_int', 123)": ["hp_int", 123, ast.Num],
-                "_('hp_int_hex', 0x18)": ["hp_int_hex", 0x18, ast.Num],
-                "_('hp_float', 3.14)": ["hp_float", 3.14, ast.Num],
-                "_('hp_float_ieee', 1e-5)": ["hp_float_ieee", 1e-5, ast.Num],
-                "_('hp_str', 'string')": ["hp_str", "string", ast.Str],
+                "_('hp_int', 123)": ["hp_int", 123, astNum],
+                "_('hp_int_hex', 0x18)": ["hp_int_hex", 0x18, astNum],
+                "_('hp_float', 3.14)": ["hp_float", 3.14, astNum],
+                "_('hp_float_ieee', 1e-5)": ["hp_float_ieee", 1e-5, astNum],
+                "_('hp_str', 'string')": ["hp_str", "string", astStr],
             }
         )
 
@@ -37,13 +41,13 @@ class TestParseSource(unittest.TestCase):
                 "_('hp0', 1, a=1, b=2, c={'d': 3, 'e': 4})": [
                     "hp0",
                     1,
-                    ast.Num,
+                    astNum,
                     {"a": 1, "b": 2, "c": {"d": 3, "e": 4}},
                 ],
                 "_('hp1', 1, a=[1, 3, 4], b=2, c={'d': 3, 'e': 4})": [
                     "hp1",
                     1,
-                    ast.Num,
+                    astNum,
                     {"a": [1, 3, 4], "b": 2, "c": {"d": 3, "e": 4}},
                 ],
             }
@@ -189,12 +193,12 @@ class TestParseSource(unittest.TestCase):
 
     def _run(self, test_data):
         """test_data spec:
-            {
-                '_(key, value)': [
-                    key, value
-                ],
-                ...
-            }
+        {
+            '_(key, value)': [
+                key, value, type
+            ],
+            ...
+        }
         """
         for expression, kv in test_data.items():
             name = kv[0]
