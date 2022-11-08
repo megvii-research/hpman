@@ -43,6 +43,5 @@ __all__ = [
     "HyperParameterDBLambdas",
     "HyperParameterOccurrence",
     "HyperParameterPriority",
-    "L",
     "P",
 ]
