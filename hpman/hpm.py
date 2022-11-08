@@ -1,7 +1,7 @@
 import ast
 import glob
 import os
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional, Set, List
 
 from .hpm_db import (
     HyperParameterOccurrence,
@@ -320,6 +320,14 @@ class HyperParameterManager:
         return {
             node.get().name: node.value for node in self.tree.flatten()  # type: ignore
         }
+
+    def get_nodes(self) -> List[HyperParamNode]:
+        """Get all current available hyperparameters and their values.
+
+        :return: dict of name to value.
+        """
+
+        return [node for node in self.tree.flatten()]
 
     def get_tree(self, prefix: str = "", annotate_dict: bool = False) -> TreeMapping:
         """Get subtree of prefix from hyperparamter tree.
